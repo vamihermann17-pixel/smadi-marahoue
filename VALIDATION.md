@@ -109,8 +109,8 @@ TAMSAT-SM (7,2–8,9 % contre 7,5–9,2 % ; 2,03–2,25 contre 2,03–2,21).
 ## Occupation du sol et vulnérabilité (novembre 2026)
 Le risque de l'application (aléa × vulnérabilité des cultures) a été abandonné pour la
 Marahoué : MODIS MCD12Q1 classe 97 % de la région en « savane » (vulnérabilité quasi
-uniforme), et ESA WorldCover v200 n'y trouve que 0,2 % de cultures en moyenne (0 % pour 90 %
-des pixels de 1 km) contre 58 % d'arbres, plantations de cacao et d'anacarde comprises. Avec
-WorldCover, 85 % de la région passait en risque « très faible » ou « faible », ce qui n'est pas
+uniforme), et ESA WorldCover v200 n'y trouve que 0,2 % de cultures en moyenne (aucune culture dans 82 % des
+pixels de 1 km, 0,1 % ou moins dans 90 %) contre 58 % d'arbres, plantations de cacao et d'anacarde comprises. Avec
+WorldCover, 86,6 % de la région passait en risque « très faible » ou « faible », ce qui n'est pas
 crédible. La page montre l'aléa ; les relevés de terrain 2027 donneront la part réellement
 cultivée autour des villages.
