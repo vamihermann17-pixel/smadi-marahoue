@@ -120,6 +120,8 @@ a{color:var(--water)}
           <option value="intensite">Intensité des mois secs</option>
           <option value="tendance">Tendance du SMADI</option>
           <option value="vulnerabilite">Vulnérabilité agricole</option>
+          <option value="cultures">Part de cultures (WorldCover)</option>
+          <option value="arbres">Part d'arbres (WorldCover)</option>
         </select>
       </div>
       <div class="ctl" id="moisCtl">
@@ -229,7 +231,7 @@ a{color:var(--water)}
           <li>SMADI(m) = SMCI(m) × LST(m−1)/LSTmax ÷ NDVI(m−1), avec SMCI = (SMmax − SM)/(SMmax − SMmin), bornes par pixel sur toute la période ; pixels avec NDVI ≤ 0,1 masqués.</li>
           <li>NDVI MODIS MOD13A3 et LST de jour MODIS Terra MOD11A2 (1 km), complétée par Aqua MYD11A2 sous les nuages ; humidité du sol <span id="mSrc"></span>, rééchantillonnée en bilinéaire.</li>
           <li>Anomalie z = (SMADI − moyenne du même mois) / écart-type du même mois, par pixel.</li>
-          <li>Aléa : classe de fréquence × classe d'intensité, regroupé en 5 classes. Risque : aléa × vulnérabilité (MODIS MCD12Q1 : cultures 5, mosaïque 4, savanes et prairies 3, fourrés 2, forêts 1).</li>
+          <li>Aléa : classe de fréquence × classe d'intensité, regroupé en 5 classes. Risque : aléa × vulnérabilité. La vulnérabilité est la moyenne, sur chaque pixel de 1 km, des poids des classes ESA WorldCover à 10 m (cultures 5, savanes et prairies 3, fourrés 2, arbres 1, bâti, eau et sol nu 0) : un pixel à moitié cultivé vaut environ 4. L'application GEE d'origine utilisait MODIS MCD12Q1, qui classe 97 % de la Marahoué en savane.</li>
           <li>Tendance : pente de Sen du SMADI moyen annuel, par décennie (positive = assèchement).</li>
         </ul></div>
         <div><h3>Limites</h3><ul>
@@ -279,7 +281,7 @@ function dec(o){const b=atob(o.b64),n=b.length,out=new Float32Array(n);for(let i
 const cache=new Map();
 function layerData(key){if(!cache.has(key)){let o;
   if(key.startsWith("m:")){const [_,k,b]=key.split(":");o=D.cartes_mois[+k][b];}
-  else if(key==="tendance"||key==="vulnerabilite")o=D.produits[key];
+  else if(["tendance","vulnerabilite","cultures","arbres"].includes(key))o=D.produits[key];
   else{const [m,l]=key.split(":");o=D.produits[m][l];}
   cache.set(key,dec(o));}return cache.get(key);}
 
@@ -301,7 +303,9 @@ function spec(){
     duree:{title:"Durée moyenne des épisodes",key:`${st.meth}:duree`,lo:1,hi:5,pal:PAL.dur,ticks:["1 mois","3","≥ 5 mois"],fmt:v=>fr(v,1)+" mois"},
     intensite:{title:"Intensité des mois secs",key:`${st.meth}:intensite`,lo:z?iz.lo:1,hi:z?iz.hi:3.5,pal:PAL.freq,ticks:z?["≤ z "+fr(iz.lo,2),fr((iz.lo+iz.hi)/2,2),"≥ "+fr(iz.hi,2)]:["SMADI 1","2,25","≥ 3,5"],fmt:v=>(z?"z moyen ":"SMADI moyen ")+fr(v,2)},
     tendance:{title:"Tendance du SMADI (par décennie)",key:"tendance",lo:-0.4,hi:0.4,pal:PAL.trend,ticks:["≤ −0,4 moins sec","0","≥ +0,4 plus sec"],fmt:v=>(v>0?"+":"")+fr(v,2)+" par décennie"},
-    vulnerabilite:{title:"Vulnérabilité agricole (MCD12Q1)",key:"vulnerabilite",cls:v=>v+1,pal:PAL.vuln,names:["0 · non concerné","1 · forêts, zones humides","2 · fourrés","3 · savanes, prairies","4 · mosaïque cultures","5 · cultures"],fmt:v=>"classe "+v},
+    vulnerabilite:{title:"Vulnérabilité agricole (WorldCover)",key:"vulnerabilite",cls:v=>Math.min(5,Math.round(v))+1,pal:PAL.vuln,names:["0 · non agricole (bâti, eau)","1 · surtout forêt","2 · fourrés","3 · savanes, prairies","4 · mosaïque avec cultures","5 · surtout cultures"],fmt:v=>"vulnérabilité "+fr(v,1)+" sur 5"},
+    cultures:{title:"Part de cultures (ESA WorldCover 2021)",key:"cultures",lo:0,hi:60,pal:["#ffffe5","#fee391","#fe9929","#cc4c02","#662506"],ticks:["0 %","30 %","≥ 60 %"],fmt:v=>fr(v,0)+" % du pixel en cultures"},
+    arbres:{title:"Part d'arbres (ESA WorldCover 2021)",key:"arbres",lo:0,hi:100,pal:["#f7fcf5","#c7e9c0","#74c476","#238b45","#00441b"],ticks:["0 %","50 %","100 %"],fmt:v=>fr(v,0)+" % du pixel en arbres"},
   };
   return L[st.layer];
 }
@@ -345,7 +349,7 @@ function pixAt(e){const r=cv.getBoundingClientRect();const j=Math.floor((e.clien
   if(i<0||j<0||i>=G.h||j>=G.w)return -1;return i*G.w+j;}
 cv.addEventListener("mousemove",e=>{const p=pixAt(e);if(p<0||!ZONE[p]){hideTip();return;}
   const S=spec(),v=layerData(S.key)[p];const lon=G.x0+(p%G.w+.5)*G.res,lat=G.y1-(Math.floor(p/G.w)+.5)*G.res;
-  showTip(e,`<b>${isFinite(v)?S.fmt(S.cls&&st.layer!=="mois"?Math.round(v):v):"pas de donnée"}</b><br>${fr(lat,2)}° N, ${fr(-lon,2)}° O`);});
+  showTip(e,`<b>${isFinite(v)?S.fmt(st.layer==="risque"||st.layer==="alea"?Math.round(v):v):"pas de donnée"}</b><br>${fr(lat,2)}° N, ${fr(-lon,2)}° O`);});
 cv.addEventListener("mouseleave",hideTip);
 
 // ---------------- Surfaces ----------------

@@ -90,7 +90,7 @@ def produits_locaux():
     lst, _ = S.combler_lst(lst, lsta, mois, zone)
     smadi = S.calcul_smadi(sm, lst, ndvi)
     z = np.where(zone, S.anomalies(smadi, mois), np.nan)
-    vuln = np.load(os.path.join(ICI, "cache_smadi", "vulnerabilite_mcd12q1.npz"))["v"]
+    vuln = S.vulnerabilite(G)["v"]
     P = S.produits(z, S.CFG["droughtThresholdZ"], S.CFG["freqBreaksZ"], S.CFG["intensityBreaksZ"], vuln, zone)
     cal = np.array([S.ym(i)[1] for i in mois])
     saison = (cal >= 7) & (cal <= 10)

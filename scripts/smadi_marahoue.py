@@ -2,7 +2,8 @@
 SMADI mensuel à 1 km sur la Marahoué (Côte d'Ivoire), mis à jour chaque mois.
 
 Version automatique de l'application Earth Engine « SMADI mensuel à 1 km »
-(smadi_gee_app.js) : mêmes données, mêmes formules, mêmes seuils (CFG, VULN).
+(smadi_gee_app.js) : mêmes données et formules ; seuil du mode anomalie et vulnérabilité
+revus (voir VALIDATION.md et VULN_WC).
 
     SMADI(m) = SMCI(m) × MLST(m−1) / NDVI(m−1)
     SMCI = (SMmax − SM) / (SMmax − SMmin)   MLST = LST / LSTmax   (bornes par pixel)
@@ -15,7 +16,7 @@ Déroulement
      Les années déjà téléchargées sont gardées dans cache_smadi/ ; seules les
      années récentes sont relues (données provisoires remplacées, nouveaux mois).
   2. Calcul local (numpy) du SMADI, des anomalies mensuelles z et des produits :
-     fréquence, durée, intensité, aléa, risque (× vulnérabilité MODIS MCD12Q1),
+     fréquence, durée, intensité, aléa, risque (× vulnérabilité ESA WorldCover),
      tendance (pente de Sen par décennie), pour les deux modes de l'application
      (seuil fixe SMADI ≥ 1 et anomalie z ≥ 1,0 ; l'application utilise z ≥ 1,5).
   3. Écriture de docs/smadi_marahoue.json (page web) et docs/serie_smadi_marahoue.csv.
@@ -76,8 +77,11 @@ CFG = {
     "moisCartes": 36,                     # nombre de derniers mois cartographiés dans la page
 }
 
-VULN = {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 3, 9: 3, 10: 3, 11: 1,
-        12: 5, 13: 0, 14: 4, 15: 0, 16: 0, 17: 0}
+# Vulnérabilité agricole (0 = non concerné … 5 = très vulnérable) des classes ESA WorldCover v200,
+# reprenant les poids de l'application (forêts 1, fourrés 2, savanes et prairies 3, cultures 5).
+# Moyennée sur chaque pixel de 1 km : un pixel à moitié cultivé vaut ≈ 4, comme une « mosaïque ».
+# (MODIS MCD12Q1, utilisé par l'application, classe 97 % de la Marahoué en savane.)
+VULN_WC = {10: 1, 20: 2, 30: 3, 40: 5, 50: 0, 60: 0, 70: 0, 80: 0, 90: 1, 95: 1, 100: 0}
 
 SM_SOURCES = {
     "era5": ("ERA5-Land, 0–7 cm, ~9 km", "ECMWF/ERA5_LAND/MONTHLY_AGGR",
@@ -300,14 +304,27 @@ def telecharger_annee(src, mois, G):
     return out
 
 
-def telecharger_vulnerabilite(G):
+def telecharger_vulnerabilite(G, blocs=4):
+    """Vulnérabilité agricole à partir d'ESA WorldCover v200 (10 m, 2021), moyennée sur chaque
+    pixel de la grille : poids VULN_WC des classes, et parts de cultures et d'arbres."""
     ee = init_ee()
-    lc = ee.ImageCollection("MODIS/061/MCD12Q1").select("LC_Type1").sort("system:time_start").mosaic()
-    keys = list(VULN)
-    vuln = lc.remap(keys, [VULN[k] for k in keys], 0).rename("v")
-    a = np.asarray(compute_pixels(vuln, G)["v"], np.float32)
-    a[a <= NODATA + 1] = np.nan
-    return a
+    wc = ee.ImageCollection("ESA/WorldCover/v200").first()
+    keys = list(VULN_WC)
+    img = (wc.remap(keys, [VULN_WC[k] for k in keys], 0).rename("v").toFloat()
+           .addBands(wc.eq(40).rename("cultures").toFloat())
+           .addBands(wc.eq(10).rename("arbres").toFloat()))
+    proj = ee.Projection("EPSG:4326", [G["res"], 0, G["x0"], 0, -G["res"], G["y1"]])
+    img = img.reduceResolution(ee.Reducer.mean(), maxPixels=65535).reproject(proj)
+    out = {k: np.full((G["h"], G["w"]), np.nan, np.float32) for k in ("v", "cultures", "arbres")}
+    bornes = np.linspace(0, G["h"], blocs + 1).astype(int)
+    for r0, r1 in zip(bornes[:-1], bornes[1:]):          # par bandes de lignes (limites de calcul)
+        Gk = {**G, "y1": G["y1"] - r0 * G["res"], "h": int(r1 - r0)}
+        arr = compute_pixels(img, Gk)
+        for k in out:
+            a = np.asarray(arr[k], np.float32)
+            a[a <= NODATA + 1] = np.nan
+            out[k][r0:r1] = a
+    return out
 
 
 # ============================ CACHE ==========================================
@@ -346,16 +363,16 @@ def entrees(src, debut, fin, G, relire=4):
 
 
 def vulnerabilite(G):
-    chemin = os.path.join(CACHE, "vulnerabilite_mcd12q1.npz")
+    """{"v": vulnérabilité 0–5 (continue), "cultures": part 0–1, "arbres": part 0–1}, en cache."""
+    chemin = os.path.join(CACHE, "vulnerabilite_worldcover.npz")
     if os.path.exists(chemin):
         z = np.load(chemin)
-        age = time.time() - os.path.getmtime(chemin)
-        if list(z["grille"]) == [G["x0"], G["y1"], G["res"], G["w"], G["h"]] and age < 180 * 86400:
-            return z["v"]
+        if list(z["grille"]) == [G["x0"], G["y1"], G["res"], G["w"], G["h"]]:
+            return {k: z[k] for k in ("v", "cultures", "arbres")}
     os.makedirs(CACHE, exist_ok=True)
-    v = telecharger_vulnerabilite(G)
-    np.savez_compressed(chemin, v=v, grille=np.array([G["x0"], G["y1"], G["res"], G["w"], G["h"]]))
-    return v
+    V = telecharger_vulnerabilite(G)
+    np.savez_compressed(chemin, **V, grille=np.array([G["x0"], G["y1"], G["res"], G["w"], G["h"]]))
+    return V
 
 
 # ============================ CALCUL (numpy) =================================
@@ -453,7 +470,7 @@ def produits(D, thr, freq_b, int_b, vuln, zone):
         a = alea.astype(float)
         a[a == 0] = np.nan
         risque = classes(a * v, CFG["riskBreaks"])
-        risque[(v <= 0) | ~valid] = 0
+        risque[(v < 0.5) | ~valid] = 0          # surtout bâti, eau ou sol nu
 
     def m(x):
         x = x.astype(np.float32).copy()
@@ -523,11 +540,12 @@ def main():
     mois = list(range(debut, fin + 1))
     lst, stats_lst = combler_lst(lst, lsta, mois, zone)
     print(f"LST : pixels manquants (Terra → Terra + Aqua), % par mois de l'année : {stats_lst}")
-    vuln = vulnerabilite(G)
-    ecrire(cle, src.label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst)
+    V = vulnerabilite(G)
+    ecrire(cle, src.label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst)
 
 
-def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=None):
+def ecrire(cle, label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst=None):
+    vuln = V["v"]
     smadi = calcul_smadi(sm, lst, ndvi)
     z = anomalies(smadi, mois)
     smadi_z = np.where(zone, smadi, np.nan)
@@ -580,7 +598,7 @@ def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=No
             "periode": [lbl(mois[0]), lbl(mois[-1])], "n_mois": len(mois),
             "annees_tendance": [complets[0], complets[-1]] if complets else None,
             "genere": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-            "cfg": CFG, "vuln": VULN,
+            "cfg": CFG, "vuln_worldcover": VULN_WC,
             "lst": "MODIS Terra MOD11A2, trous comblés par Aqua MYD11A2 (écart Aqua − Terra retiré)",
             "lst_manquante_pct": stats_lst,
         },
@@ -589,7 +607,9 @@ def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=No
         "villes": VILLES,
         "produits": {"fixe": lay(P["fixe"]), "z": lay(P["z"]),
                      "tendance": code(np.clip(trend, -1.27, 1.27), -1.27, 0.01),
-                     "vulnerabilite": code(np.where(zone, np.nan_to_num(vuln, nan=0), np.nan), 0, 1)},
+                     "vulnerabilite": code(np.where(zone, np.nan_to_num(vuln, nan=0), np.nan), 0, 0.025),
+                     "cultures": code(np.where(zone, 100 * np.nan_to_num(V["cultures"], nan=0), np.nan), 0, 0.4),
+                     "arbres": code(np.where(zone, 100 * np.nan_to_num(V["arbres"], nan=0), np.nan), 0, 0.4)},
         "surfaces_km2": {"fixe": {"alea": surfaces(P["fixe"]["alea"]), "risque": surfaces(P["fixe"]["risque"])},
                          "z": {"alea": surfaces(P["z"]["alea"]), "risque": surfaces(P["z"]["risque"])}},
         "resume_zone": {
