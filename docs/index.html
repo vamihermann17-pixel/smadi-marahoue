@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sécheresse agricole en Marahoué</title>
-<meta name="description" content="SMADI mensuel à 1 km sur la Marahoué (Côte d'Ivoire) : sécheresse du mois, aléa, risque et tendance, mis à jour chaque mois.">
+<meta name="description" content="SMADI mensuel à 1 km sur la Marahoué (Côte d'Ivoire) : sécheresse du mois, aléa et tendance, mis à jour chaque mois.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -113,13 +113,11 @@ a{color:var(--water)}
         <select id="layerSel">
           <option value="mois">SMADI du mois</option>
           <option value="moisz">Anomalie du mois (z)</option>
-          <option value="risque">Risque de sécheresse agricole</option>
-          <option value="alea">Aléa (fréquence × intensité)</option>
+          <option value="alea">Aléa de sécheresse (fréquence × intensité)</option>
           <option value="freq">Fréquence des mois secs</option>
           <option value="duree">Durée moyenne des épisodes</option>
           <option value="intensite">Intensité des mois secs</option>
           <option value="tendance">Tendance du SMADI</option>
-          <option value="vulnerabilite">Vulnérabilité agricole</option>
           <option value="cultures">Part de cultures (WorldCover)</option>
           <option value="arbres">Part d'arbres (WorldCover)</option>
         </select>
@@ -231,7 +229,7 @@ a{color:var(--water)}
           <li>SMADI(m) = SMCI(m) × LST(m−1)/LSTmax ÷ NDVI(m−1), avec SMCI = (SMmax − SM)/(SMmax − SMmin), bornes par pixel sur toute la période ; pixels avec NDVI ≤ 0,1 masqués.</li>
           <li>NDVI MODIS MOD13A3 et LST de jour MODIS Terra MOD11A2 (1 km), complétée par Aqua MYD11A2 sous les nuages ; humidité du sol <span id="mSrc"></span>, rééchantillonnée en bilinéaire.</li>
           <li>Anomalie z = (SMADI − moyenne du même mois) / écart-type du même mois, par pixel.</li>
-          <li>Aléa : classe de fréquence × classe d'intensité, regroupé en 5 classes. Risque : aléa × vulnérabilité. La vulnérabilité est la moyenne, sur chaque pixel de 1 km, des poids des classes ESA WorldCover à 10 m (cultures 5, savanes et prairies 3, fourrés 2, arbres 1, bâti, eau et sol nu 0) : un pixel à moitié cultivé vaut environ 4. L'application GEE d'origine utilisait MODIS MCD12Q1, qui classe 97 % de la Marahoué en savane.</li>
+          <li>Aléa : classe de fréquence × classe d'intensité, regroupé en 5 classes. Pas de carte de risque (aléa × vulnérabilité des cultures) : aucune carte d'occupation du sol ne voit correctement les cultures de la Marahoué. MODIS MCD12Q1 classe 97 % de la région en savane ; ESA WorldCover n'y trouve que 0,2 % de cultures et compte les plantations de cacao et d'anacarde comme des arbres. Les parts de cultures et d'arbres WorldCover restent affichées à titre indicatif.</li>
           <li>Tendance : pente de Sen du SMADI moyen annuel, par décennie (positive = assèchement).</li>
         </ul></div>
         <div><h3>Limites</h3><ul>
@@ -281,7 +279,7 @@ function dec(o){const b=atob(o.b64),n=b.length,out=new Float32Array(n);for(let i
 const cache=new Map();
 function layerData(key){if(!cache.has(key)){let o;
   if(key.startsWith("m:")){const [_,k,b]=key.split(":");o=D.cartes_mois[+k][b];}
-  else if(["tendance","vulnerabilite","cultures","arbres"].includes(key))o=D.produits[key];
+  else if(["tendance","cultures","arbres"].includes(key))o=D.produits[key];
   else{const [m,l]=key.split(":");o=D.produits[m][l];}
   cache.set(key,dec(o));}return cache.get(key);}
 
@@ -297,14 +295,12 @@ function spec(){
   const L={
     mois:{title:"SMADI du mois",key:`m:${k}:smadi`,cls:v=>smadiClass(v),pal:PAL.smadi,names:SMN.map((n,i)=>{const b=cfg.smadiBreaks;return (i===0?"< "+fr(b[0]):i===4?"≥ "+fr(b[3]):fr(b[i-1])+"–"+fr(b[i]))+" · "+n;}),fmt:v=>fr(v,2)},
     moisz:{title:"Anomalie du mois (z)",key:`m:${k}:z`,lo:-2,hi:2,pal:PAL.trend,ticks:["≤ −2 plus humide","0 normal","≥ +2 plus sec"],fmt:v=>(v>0?"+":"")+fr(v,2)},
-    risque:{title:"Risque de sécheresse agricole",key:`${st.meth}:risque`,cls:v=>v,pal:PAL.level,names:LEVEL,fmt:v=>LEVEL[v-1]},
-    alea:{title:"Aléa (fréquence × intensité)",key:`${st.meth}:alea`,cls:v=>v,pal:PAL.level,names:LEVEL,fmt:v=>LEVEL[v-1]},
+    alea:{title:"Aléa de sécheresse (fréquence × intensité)",key:`${st.meth}:alea`,cls:v=>v,pal:PAL.level,names:LEVEL,fmt:v=>LEVEL[v-1]},
     freq:{title:"Fréquence des mois secs",key:`${st.meth}:freq`,lo:z?fz.lo:0,hi:z?fz.hi:40,pal:PAL.freq,ticks:z?["≤ "+fr(fz.lo,0)+" %",fr((fz.lo+fz.hi)/2,0)+" %","≥ "+fr(fz.hi,0)+" %"]:["0 %","20 %","≥ 40 %"],fmt:v=>fr(v,1)+" % des mois"},
     duree:{title:"Durée moyenne des épisodes",key:`${st.meth}:duree`,lo:1,hi:5,pal:PAL.dur,ticks:["1 mois","3","≥ 5 mois"],fmt:v=>fr(v,1)+" mois"},
     intensite:{title:"Intensité des mois secs",key:`${st.meth}:intensite`,lo:z?iz.lo:1,hi:z?iz.hi:3.5,pal:PAL.freq,ticks:z?["≤ z "+fr(iz.lo,2),fr((iz.lo+iz.hi)/2,2),"≥ "+fr(iz.hi,2)]:["SMADI 1","2,25","≥ 3,5"],fmt:v=>(z?"z moyen ":"SMADI moyen ")+fr(v,2)},
     tendance:{title:"Tendance du SMADI (par décennie)",key:"tendance",lo:-0.4,hi:0.4,pal:PAL.trend,ticks:["≤ −0,4 moins sec","0","≥ +0,4 plus sec"],fmt:v=>(v>0?"+":"")+fr(v,2)+" par décennie"},
-    vulnerabilite:{title:"Vulnérabilité agricole (WorldCover)",key:"vulnerabilite",cls:v=>Math.min(5,Math.round(v))+1,pal:PAL.vuln,names:["0 · non agricole (bâti, eau)","1 · surtout forêt","2 · fourrés","3 · savanes, prairies","4 · mosaïque avec cultures","5 · surtout cultures"],fmt:v=>"vulnérabilité "+fr(v,1)+" sur 5"},
-    cultures:{title:"Part de cultures (ESA WorldCover 2021)",key:"cultures",lo:0,hi:60,pal:["#ffffe5","#fee391","#fe9929","#cc4c02","#662506"],ticks:["0 %","30 %","≥ 60 %"],fmt:v=>fr(v,0)+" % du pixel en cultures"},
+    cultures:{title:"Part de cultures (ESA WorldCover 2021, sous-estimée)",key:"cultures",lo:0,hi:60,pal:["#ffffe5","#fee391","#fe9929","#cc4c02","#662506"],ticks:["0 %","30 %","≥ 60 %"],fmt:v=>fr(v,0)+" % du pixel en cultures"},
     arbres:{title:"Part d'arbres (ESA WorldCover 2021)",key:"arbres",lo:0,hi:100,pal:["#f7fcf5","#c7e9c0","#74c476","#238b45","#00441b"],ticks:["0 %","50 %","100 %"],fmt:v=>fr(v,0)+" % du pixel en arbres"},
   };
   return L[st.layer];
@@ -335,8 +331,8 @@ function drawMap(){
     ctx.lineWidth=3*dpr;ctx.strokeStyle=css("--surface");ctx.strokeText(n,X+6*dpr,Y-5*dpr);ctx.fillText(n,X+6*dpr,Y-5*dpr);}
   $("#mapTitle").textContent=S.title+(st.layer.startsWith("mois")?" · "+mLong(D.cartes_mois[st.mi].m):"");
   legend(S);
-  $("#mapNote").textContent=st.layer==="risque"?"Zones urbaines, sols nus et eau non classés.":st.layer==="tendance"?`Années complètes ${D.meta.annees_tendance?D.meta.annees_tendance.join("–"):""}.`:
-    ["freq","duree","intensite","alea","risque"].includes(st.layer)?`Mois sec : ${st.meth==="z"?"anomalie z ≥ "+fr(D.meta.cfg.droughtThresholdZ):"SMADI ≥ "+fr(D.meta.cfg.droughtThreshold,0)}, période ${mShort(D.meta.periode[0])} – ${mShort(D.meta.periode[1])}.`:"";
+  $("#mapNote").textContent=st.layer==="cultures"||st.layer==="arbres"?"Indicatif : WorldCover voit mal les petits champs et compte les plantations (cacao, anacarde) comme des arbres.":st.layer==="tendance"?`Années complètes ${D.meta.annees_tendance?D.meta.annees_tendance.join("–"):""}.`:
+    ["freq","duree","intensite","alea"].includes(st.layer)?`Mois sec : ${st.meth==="z"?"anomalie z ≥ "+fr(D.meta.cfg.droughtThresholdZ):"SMADI ≥ "+fr(D.meta.cfg.droughtThreshold,0)}, période ${mShort(D.meta.periode[0])} – ${mShort(D.meta.periode[1])}.`:"";
   areas(S,vals);
 }
 function legend(S){
@@ -349,7 +345,7 @@ function pixAt(e){const r=cv.getBoundingClientRect();const j=Math.floor((e.clien
   if(i<0||j<0||i>=G.h||j>=G.w)return -1;return i*G.w+j;}
 cv.addEventListener("mousemove",e=>{const p=pixAt(e);if(p<0||!ZONE[p]){hideTip();return;}
   const S=spec(),v=layerData(S.key)[p];const lon=G.x0+(p%G.w+.5)*G.res,lat=G.y1-(Math.floor(p/G.w)+.5)*G.res;
-  showTip(e,`<b>${isFinite(v)?S.fmt(st.layer==="risque"||st.layer==="alea"?Math.round(v):v):"pas de donnée"}</b><br>${fr(lat,2)}° N, ${fr(-lon,2)}° O`);});
+  showTip(e,`<b>${isFinite(v)?S.fmt(st.layer==="alea"?Math.round(v):v):"pas de donnée"}</b><br>${fr(lat,2)}° N, ${fr(-lon,2)}° O`);});
 cv.addEventListener("mouseleave",hideTip);
 
 // ---------------- Surfaces ----------------
@@ -377,7 +373,7 @@ function pill(z){return z>=1.5?'<span class="pill bad">Sécheresse sévère</spa
 function verdict(){
   const d=D.dernier_mois,z=st.meth==="z",cfg=D.meta.cfg;
   const pct=z?d.pct_z:d.pct_fixe;
-  const sr=D.surfaces_km2[st.meth].risque,tot=sr.reduce((a,b)=>a+b,0),fort=tot?(sr[3]+sr[4])/tot*100:0;
+  const sr=D.surfaces_km2[st.meth].alea,tot=sr.reduce((a,b)=>a+b,0),fort=tot?(sr[3]+sr[4])/tot*100:0;
   const same=D.serie.filter(s=>s.m.slice(5)===d.m.slice(5)&&s.z!=null).sort((a,b)=>b.z-a.z);
   const rang=same.findIndex(s=>s.m===d.m)+1;
   $("#verdict").innerHTML=`
@@ -387,8 +383,8 @@ function verdict(){
      ${pill(d.z)}<span class="small">${rang?`${rang}<sup>${rang===1?"er":"e"}</sup> ${MOISL[+d.m.slice(5)-1]} le plus sec sur ${same.length}`:""}</span></div>
    <div class="tile"><span class="eyebrow">Région en sécheresse</span><span class="big num">${fr(pct,0)} %</span>
      <span class="small">des pixels avec ${z?"z ≥ "+fr(cfg.droughtThresholdZ):"SMADI ≥ "+fr(cfg.droughtThreshold,0)} en ${MOISL[+d.m.slice(5)-1]}</span></div>
-   <div class="tile"><span class="eyebrow">Risque structurel (${mShort(D.meta.periode[0])} – ${mShort(D.meta.periode[1])})</span><span class="big num">${fr(fort,0)} %</span>
-     <span class="small">de la surface classée en risque fort ou très fort (${Math.round(sr[3]+sr[4]).toLocaleString("fr-FR")} km²)</span></div>`;
+   <div class="tile"><span class="eyebrow">Aléa de sécheresse (${mShort(D.meta.periode[0])} – ${mShort(D.meta.periode[1])})</span><span class="big num">${fr(fort,0)} %</span>
+     <span class="small">de la surface en aléa fort ou très fort (${Math.round(sr[3]+sr[4]).toLocaleString("fr-FR")} km²)</span></div>`;
 }
 
 // ---------------- Série ----------------

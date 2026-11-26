@@ -81,7 +81,7 @@ Protocole : [docs/fiche_terrain.html](docs/fiche_terrain.html) (2 pages A4 à im
 - **Villages** : 15 titulaires et 5 remplaçants proposés dans [terrain/](terrain/LISEZMOI.md)
   (`villages_observatoire.csv`, carte, relevés pré-remplis `releves_2027.csv`) : 15
   sous-préfectures différentes, 12 km au moins entre deux villages, toutes les classes de
-  risque SMADI. À valider avec l'ANADER et les services agricoles.
+  d'aléa SMADI. À valider avec l'ANADER et les services agricoles.
 - **Fréquence** : une fiche par village et par mois, d'avril à novembre (dans les 5 derniers
   jours du mois), toujours par le même observateur.
 - **Observations** : comparaison du mois à un mois normal (question principale, 1 à 5),
@@ -105,3 +105,12 @@ calcul sur toute la Côte d'Ivoire à 0,05° (`scripts/calibrer_seuils_z.py`) :
 fréquence 14,7 / 15,5 / 16,2 / 16,9 % ; intensité z 1,61 / 1,67 / 1,72 / 1,77.
 Contrôle : pour z ≥ 1,5, ce calage redonne presque les bornes de l'application, établies avec
 TAMSAT-SM (7,2–8,9 % contre 7,5–9,2 % ; 2,03–2,25 contre 2,03–2,21).
+
+## Occupation du sol et vulnérabilité (novembre 2026)
+Le risque de l'application (aléa × vulnérabilité des cultures) a été abandonné pour la
+Marahoué : MODIS MCD12Q1 classe 97 % de la région en « savane » (vulnérabilité quasi
+uniforme), et ESA WorldCover v200 n'y trouve que 0,2 % de cultures en moyenne (0 % pour 90 %
+des pixels de 1 km) contre 58 % d'arbres, plantations de cacao et d'anacarde comprises. Avec
+WorldCover, 85 % de la région passait en risque « très faible » ou « faible », ce qui n'est pas
+crédible. La page montre l'aléa ; les relevés de terrain 2027 donneront la part réellement
+cultivée autour des villages.

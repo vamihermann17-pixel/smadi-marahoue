@@ -2,8 +2,11 @@
 SMADI mensuel à 1 km sur la Marahoué (Côte d'Ivoire), mis à jour chaque mois.
 
 Version automatique de l'application Earth Engine « SMADI mensuel à 1 km »
-(smadi_gee_app.js) : mêmes données et formules ; seuil du mode anomalie et vulnérabilité
-revus (voir VALIDATION.md et VULN_WC).
+(smadi_gee_app.js) : mêmes données et formules ; seuil du mode anomalie revu (VALIDATION.md).
+Pas de carte de risque (aléa × vulnérabilité) : aucune carte d'occupation du sol ne voit
+correctement les cultures de la Marahoué (MODIS MCD12Q1 : 97 % de « savane » ; ESA WorldCover :
+0,2 % de cultures, plantations comptées en arbres). La page montre l'aléa, et les parts de
+cultures et d'arbres WorldCover à titre indicatif.
 
     SMADI(m) = SMCI(m) × MLST(m−1) / NDVI(m−1)
     SMCI = (SMmax − SM) / (SMmax − SMmin)   MLST = LST / LSTmax   (bornes par pixel)
@@ -16,7 +19,7 @@ Déroulement
      Les années déjà téléchargées sont gardées dans cache_smadi/ ; seules les
      années récentes sont relues (données provisoires remplacées, nouveaux mois).
   2. Calcul local (numpy) du SMADI, des anomalies mensuelles z et des produits :
-     fréquence, durée, intensité, aléa, risque (× vulnérabilité ESA WorldCover),
+     fréquence, durée, intensité, aléa (fréquence × intensité),
      tendance (pente de Sen par décennie), pour les deux modes de l'application
      (seuil fixe SMADI ≥ 1 et anomalie z ≥ 1,0 ; l'application utilise z ≥ 1,5).
   3. Écriture de docs/smadi_marahoue.json (page web) et docs/serie_smadi_marahoue.csv.
@@ -449,7 +452,7 @@ def pente_sen(t, y):
         return np.nanmedian(pentes, 0)
 
 
-def produits(D, thr, freq_b, int_b, vuln, zone):
+def produits(D, thr, freq_b, int_b, zone):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         count = np.sum(~np.isnan(D), 0)
@@ -466,17 +469,12 @@ def produits(D, thr, freq_b, int_b, vuln, zone):
         int_c = classes(np.nan_to_num(inten, nan=0.0), int_b).astype(float)
         alea = classes(freq_c * int_c, CFG["aleaBreaks"])
         alea[~valid] = 0
-        v = np.nan_to_num(vuln, nan=0.0)
-        a = alea.astype(float)
-        a[a == 0] = np.nan
-        risque = classes(a * v, CFG["riskBreaks"])
-        risque[(v < 0.5) | ~valid] = 0          # surtout bâti, eau ou sol nu
 
     def m(x):
         x = x.astype(np.float32).copy()
         x[~valid] = np.nan
         return x
-    return {"freq": m(freq), "duree": m(duree), "intensite": m(inten), "alea": alea, "risque": risque}
+    return {"freq": m(freq), "duree": m(duree), "intensite": m(inten), "alea": alea}
 
 
 def tendance(smadi, mois, zone):
@@ -545,7 +543,6 @@ def main():
 
 
 def ecrire(cle, label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst=None):
-    vuln = V["v"]
     smadi = calcul_smadi(sm, lst, ndvi)
     z = anomalies(smadi, mois)
     smadi_z = np.where(zone, smadi, np.nan)
@@ -553,9 +550,9 @@ def ecrire(cle, label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst=None)
 
     P = {
         "fixe": produits(smadi_z, CFG["droughtThreshold"], CFG["freqBreaks"],
-                         CFG["intensityBreaks"], vuln, zone),
+                         CFG["intensityBreaks"], zone),
         "z": produits(z_z, CFG["droughtThresholdZ"], CFG["freqBreaksZ"],
-                      CFG["intensityBreaksZ"], vuln, zone),
+                      CFG["intensityBreaksZ"], zone),
     }
     trend, complets = tendance(smadi_z, mois, zone)
 
@@ -584,7 +581,7 @@ def ecrire(cle, label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst=None)
         return {"freq": code(np.clip(p["freq"], 0, 100), 0, 0.4),
                 "duree": code(np.clip(p["duree"], 0, 12.7), 0, 0.05),
                 "intensite": code(np.clip(p["intensite"], 0, 12.7), 0, 0.05),
-                "alea": code_classes(p["alea"]), "risque": code_classes(p["risque"])}
+                "alea": code_classes(p["alea"])}
 
     def surfaces(c):
         lat = G["y1"] - (np.arange(G["h"]) + 0.5) * G["res"]
@@ -598,7 +595,7 @@ def ecrire(cle, label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst=None)
             "periode": [lbl(mois[0]), lbl(mois[-1])], "n_mois": len(mois),
             "annees_tendance": [complets[0], complets[-1]] if complets else None,
             "genere": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
-            "cfg": CFG, "vuln_worldcover": VULN_WC,
+            "cfg": CFG,
             "lst": "MODIS Terra MOD11A2, trous comblés par Aqua MYD11A2 (écart Aqua − Terra retiré)",
             "lst_manquante_pct": stats_lst,
         },
@@ -607,11 +604,9 @@ def ecrire(cle, label, mois, sm, lst, ndvi, V, G, zone, anneaux, stats_lst=None)
         "villes": VILLES,
         "produits": {"fixe": lay(P["fixe"]), "z": lay(P["z"]),
                      "tendance": code(np.clip(trend, -1.27, 1.27), -1.27, 0.01),
-                     "vulnerabilite": code(np.where(zone, np.nan_to_num(vuln, nan=0), np.nan), 0, 0.025),
                      "cultures": code(np.where(zone, 100 * np.nan_to_num(V["cultures"], nan=0), np.nan), 0, 0.4),
                      "arbres": code(np.where(zone, 100 * np.nan_to_num(V["arbres"], nan=0), np.nan), 0, 0.4)},
-        "surfaces_km2": {"fixe": {"alea": surfaces(P["fixe"]["alea"]), "risque": surfaces(P["fixe"]["risque"])},
-                         "z": {"alea": surfaces(P["z"]["alea"]), "risque": surfaces(P["z"]["risque"])}},
+        "surfaces_km2": {"fixe": {"alea": surfaces(P["fixe"]["alea"])}, "z": {"alea": surfaces(P["z"]["alea"])}},
         "resume_zone": {
             m: {"freq": r(np.nanmean(P[m]["freq"][zone]), 1), "duree": r(np.nanmean(P[m]["duree"][zone]), 2),
                 "intensite": r(np.nanmean(P[m]["intensite"][zone]), 2)} for m in ("fixe", "z")},

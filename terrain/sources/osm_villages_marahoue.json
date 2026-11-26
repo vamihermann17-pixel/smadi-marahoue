@@ -136,8 +136,8 @@
 "osm_id": 443314125,
 "lon": -6.1395,
 "lat": 7.456,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.157,
 "sous_prefecture": "Zanzra"
 },
@@ -179,9 +179,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.125,
-"sous_prefecture": "Zanzra",
-"code": "MAR03",
-"statut": "titulaire"
+"sous_prefecture": "Zanzra"
 },
 {
 "nom": "Vouéboufla",
@@ -341,9 +339,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.115,
-"sous_prefecture": "Gohitafla",
-"code": "MAR02",
-"statut": "titulaire"
+"sous_prefecture": "Gohitafla"
 },
 {
 "nom": "Gohifla",
@@ -370,8 +366,8 @@
 "osm_id": 443316651,
 "lon": -5.8582,
 "lat": 7.1346,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.145,
 "sous_prefecture": "Tibéita"
 },
@@ -443,9 +439,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.166,
-"sous_prefecture": "Bonon",
-"code": "MAR09",
-"statut": "titulaire"
+"sous_prefecture": "Bonon"
 },
 {
 "nom": "Blanfla",
@@ -475,9 +469,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.144,
-"sous_prefecture": "Kononfla",
-"code": "MAR14",
-"statut": "titulaire"
+"sous_prefecture": "Kononfla"
 },
 {
 "nom": "Koumoudji",
@@ -577,15 +569,17 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.079,
-"sous_prefecture": "Bégbéssou"
+"sous_prefecture": "Bégbéssou",
+"code": "MAR-R3",
+"statut": "remplaçant"
 },
 {
 "nom": "Kouétinfla",
 "osm_id": 2948426570,
 "lon": -6.0455,
 "lat": 6.6191,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.163,
 "sous_prefecture": "Kouétinfla"
 },
@@ -597,9 +591,7 @@
 "risque": 2,
 "classe": "Faible",
 "lst_manquante": 0.139,
-"sous_prefecture": "Maminigui",
-"code": "MAR-R2",
-"statut": "remplaçant"
+"sous_prefecture": "Maminigui"
 },
 {
 "nom": "N’Douffoukankro",
@@ -626,12 +618,10 @@
 "osm_id": 2948426980,
 "lon": -6.0629,
 "lat": 6.7881,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.197,
-"sous_prefecture": "Zaguiéta",
-"code": "MAR11",
-"statut": "titulaire"
+"sous_prefecture": "Zaguiéta"
 },
 {
 "nom": "Diafouéfla",
@@ -734,6 +724,16 @@
 "sous_prefecture": "Zuénoula"
 },
 {
+"nom": "Parabenefla",
+"osm_id": 2969606227,
+"lon": -5.7919,
+"lat": 6.5588,
+"risque": 3,
+"classe": "Moyen",
+"lst_manquante": 0.148,
+"sous_prefecture": "Sinfra"
+},
+{
 "nom": "Zemenafla",
 "osm_id": 2969606341,
 "lon": -5.7833,
@@ -741,9 +741,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.146,
-"sous_prefecture": "Sinfra",
-"code": "MAR-R5",
-"statut": "remplaçant"
+"sous_prefecture": "Sinfra"
 },
 {
 "nom": "Tiezankro I",
@@ -840,8 +838,8 @@
 "osm_id": 2969718773,
 "lon": -5.6435,
 "lat": 6.936,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.162,
 "sous_prefecture": "Bouaflé"
 },
@@ -873,7 +871,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.149,
-"sous_prefecture": "Bouaflé"
+"sous_prefecture": "Bouaflé",
+"code": "MAR08",
+"statut": "titulaire"
 },
 {
 "nom": "Angovia",
@@ -935,9 +935,7 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.186,
-"sous_prefecture": "Bouaflé",
-"code": "MAR-R4",
-"statut": "remplaçant"
+"sous_prefecture": "Bouaflé"
 },
 {
 "nom": "Duafla",
@@ -1007,7 +1005,9 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.177,
-"sous_prefecture": "Bonon"
+"sous_prefecture": "Bonon",
+"code": "MAR-R4",
+"statut": "remplaçant"
 },
 {
 "nom": "Souroulaye",
@@ -1047,9 +1047,7 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.163,
-"sous_prefecture": "N'Douffoukankro",
-"code": "MAR10",
-"statut": "titulaire"
+"sous_prefecture": "N'Douffoukankro"
 },
 {
 "nom": "Bozi Satmaci",
@@ -1171,9 +1169,7 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.122,
-"sous_prefecture": "Zuénoula",
-"code": "MAR04",
-"statut": "titulaire"
+"sous_prefecture": "Zuénoula"
 },
 {
 "nom": "Bouafla",
@@ -1193,15 +1189,17 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.115,
-"sous_prefecture": "Zuénoula"
+"sous_prefecture": "Zuénoula",
+"code": "MAR02",
+"statut": "titulaire"
 },
 {
 "nom": "Garango",
 "osm_id": 3013819509,
 "lon": -5.8087,
 "lat": 6.963,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.196,
 "sous_prefecture": "Bouaflé"
 },
@@ -1224,6 +1222,18 @@
 "classe": "Moyen",
 "lst_manquante": 0.142,
 "sous_prefecture": "N'Douffoukankro"
+},
+{
+"nom": "Diacohou-Sud",
+"osm_id": 3013819523,
+"lon": -5.871,
+"lat": 6.7881,
+"risque": 2,
+"classe": "Faible",
+"lst_manquante": 0.135,
+"sous_prefecture": "N'Douffoukankro",
+"code": "MAR10",
+"statut": "titulaire"
 },
 {
 "nom": "Bounéfla",
@@ -1263,9 +1273,7 @@
 "risque": 2,
 "classe": "Faible",
 "lst_manquante": 0.152,
-"sous_prefecture": "Bouaflé",
-"code": "MAR08",
-"statut": "titulaire"
+"sous_prefecture": "Bouaflé"
 },
 {
 "nom": "Bokassou",
@@ -1325,7 +1333,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.159,
-"sous_prefecture": "Bonon"
+"sous_prefecture": "Bonon",
+"code": "MAR09",
+"statut": "titulaire"
 },
 {
 "nom": "Bagozra",
@@ -1335,7 +1345,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.135,
-"sous_prefecture": "Zuénoula"
+"sous_prefecture": "Zuénoula",
+"code": "MAR-R1",
+"statut": "remplaçant"
 },
 {
 "nom": "Bahuafla",
@@ -1365,6 +1377,16 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.177,
+"sous_prefecture": "Sinfra"
+},
+{
+"nom": "Huafla",
+"osm_id": 3136472013,
+"lon": -5.8042,
+"lat": 6.5645,
+"risque": 5,
+"classe": "Très fort",
+"lst_manquante": 0.154,
 "sous_prefecture": "Sinfra"
 },
 {
@@ -1426,8 +1448,8 @@
 "classe": "Moyen",
 "lst_manquante": 0.158,
 "sous_prefecture": "Tibéita",
-"code": "MAR06",
-"statut": "titulaire"
+"code": "MAR-R2",
+"statut": "remplaçant"
 },
 {
 "nom": "Kanotafla",
@@ -1477,9 +1499,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.11,
-"sous_prefecture": "Zuénoula",
-"code": "MAR-R1",
-"statut": "remplaçant"
+"sous_prefecture": "Zuénoula"
 },
 {
 "nom": "Kavaka",
@@ -1499,7 +1519,9 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.216,
-"sous_prefecture": "Zaguiéta"
+"sous_prefecture": "Zaguiéta",
+"code": "MAR11",
+"statut": "titulaire"
 },
 {
 "nom": "Yoho",
@@ -1579,7 +1601,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.197,
-"sous_prefecture": "Bazré"
+"sous_prefecture": "Bazré",
+"code": "MAR12",
+"statut": "titulaire"
 },
 {
 "nom": "Tiezankro 2",
@@ -1609,7 +1633,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.153,
-"sous_prefecture": "Sinfra"
+"sous_prefecture": "Sinfra",
+"code": "MAR15",
+"statut": "titulaire"
 },
 {
 "nom": "Gbalebonou",
@@ -1649,9 +1675,7 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.164,
-"sous_prefecture": "Sinfra",
-"code": "MAR13",
-"statut": "titulaire"
+"sous_prefecture": "Sinfra"
 },
 {
 "nom": "Akakro",
@@ -1661,7 +1685,9 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.163,
-"sous_prefecture": "Kouétinfla"
+"sous_prefecture": "Kouétinfla",
+"code": "MAR14",
+"statut": "titulaire"
 },
 {
 "nom": "Kouroudoufla",
@@ -1681,9 +1707,7 @@
 "risque": 2,
 "classe": "Faible",
 "lst_manquante": 0.165,
-"sous_prefecture": "Kouétinfla",
-"code": "MAR15",
-"statut": "titulaire"
+"sous_prefecture": "Kouétinfla"
 },
 {
 "nom": "Kouadiotekro",
@@ -1843,7 +1867,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.173,
-"sous_prefecture": "Bouaflé"
+"sous_prefecture": "Bouaflé",
+"code": "MAR-R5",
+"statut": "remplaçant"
 },
 {
 "nom": "Kouézra 2",
@@ -1856,6 +1882,18 @@
 "sous_prefecture": "Zanzra"
 },
 {
+"nom": "Bérita",
+"osm_id": 13153833027,
+"lon": -5.6069,
+"lat": 6.6477,
+"risque": 4,
+"classe": "Fort",
+"lst_manquante": 0.141,
+"sous_prefecture": "Kononfla",
+"code": "MAR13",
+"statut": "titulaire"
+},
+{
 "nom": "Koadi",
 "osm_id": 13153833035,
 "lon": -5.4841,
@@ -1863,9 +1901,7 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.187,
-"sous_prefecture": "Bazré",
-"code": "MAR12",
-"statut": "titulaire"
+"sous_prefecture": "Bazré"
 },
 {
 "nom": "Gonfla",
@@ -1882,8 +1918,8 @@
 "osm_id": 13153833090,
 "lon": -6.0663,
 "lat": 6.7863,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.197,
 "sous_prefecture": "Zaguiéta"
 },
@@ -1995,9 +2031,7 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.132,
-"sous_prefecture": "Kanzra",
-"code": "MAR-R3",
-"statut": "remplaçant"
+"sous_prefecture": "Kanzra"
 },
 {
 "nom": "Gouéhizra",
@@ -2018,7 +2052,7 @@
 "classe": "Moyen",
 "lst_manquante": 0.136,
 "sous_prefecture": "Kanzra",
-"code": "MAR05",
+"code": "MAR06",
 "statut": "titulaire"
 },
 {
@@ -2036,8 +2070,8 @@
 "osm_id": 13160887855,
 "lon": -6.0176,
 "lat": 7.4669,
-"risque": 4,
-"classe": "Fort",
+"risque": 5,
+"classe": "Très fort",
 "lst_manquante": 0.12,
 "sous_prefecture": "Zuénoula"
 },
@@ -2082,6 +2116,18 @@
 "sous_prefecture": "Zanzra"
 },
 {
+"nom": "Kouyafla",
+"osm_id": 13160887878,
+"lon": -6.2111,
+"lat": 7.4862,
+"risque": 4,
+"classe": "Fort",
+"lst_manquante": 0.148,
+"sous_prefecture": "Zanzra",
+"code": "MAR04",
+"statut": "titulaire"
+},
+{
 "nom": "Ourouzra",
 "osm_id": 13160887880,
 "lon": -6.1846,
@@ -2109,7 +2155,9 @@
 "risque": 4,
 "classe": "Fort",
 "lst_manquante": 0.131,
-"sous_prefecture": "Gohitafla"
+"sous_prefecture": "Gohitafla",
+"code": "MAR03",
+"statut": "titulaire"
 },
 {
 "nom": "Bohidianfla",
@@ -2219,7 +2267,9 @@
 "risque": 3,
 "classe": "Moyen",
 "lst_manquante": 0.139,
-"sous_prefecture": "Maminigui"
+"sous_prefecture": "Maminigui",
+"code": "MAR05",
+"statut": "titulaire"
 },
 {
 "nom": "Kpetoukro",

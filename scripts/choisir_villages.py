@@ -5,7 +5,7 @@ Candidats : villages OpenStreetMap (place=village) situés dans la Marahoué, à
 de la limite de la région (la comparaison utilise un rayon de 3 km).
 
 Pour chaque candidat (pixels SMADI dans un rayon d'environ 3 km) :
-  - classe de risque du mode anomalie (z ≥ seuil de CFG) au pixel du village ;
+  - classe d'aléa du mode anomalie (z ≥ seuil de CFG) au pixel du village ;
   - part des mois de juillet à octobre sans LST après comblement par Aqua (nuages) ;
   - sous-préfecture (geoBoundaries CIV ADM3).
 
@@ -90,12 +90,11 @@ def produits_locaux():
     lst, _ = S.combler_lst(lst, lsta, mois, zone)
     smadi = S.calcul_smadi(sm, lst, ndvi)
     z = np.where(zone, S.anomalies(smadi, mois), np.nan)
-    vuln = S.vulnerabilite(G)["v"]
-    P = S.produits(z, S.CFG["droughtThresholdZ"], S.CFG["freqBreaksZ"], S.CFG["intensityBreaksZ"], vuln, zone)
+    P = S.produits(z, S.CFG["droughtThresholdZ"], S.CFG["freqBreaksZ"], S.CFG["intensityBreaksZ"], zone)
     cal = np.array([S.ym(i)[1] for i in mois])
     saison = (cal >= 7) & (cal <= 10)
     lst_manque = np.isnan(lst[saison]).mean(0)
-    return G, ann, zone, P["risque"], vuln, lst_manque
+    return G, ann, zone, P["alea"], lst_manque
 
 
 def fenetre(x, G, lon, lat, r=3):
@@ -108,7 +107,7 @@ def main():
         sys.exit("Usage : python choisir_villages.py <osm_villages.json> <geoBoundaries-CIV-ADM3.geojson>")
     osm = json.load(open(sys.argv[1], encoding="utf-8"))
     adm3 = json.load(open(sys.argv[2], encoding="utf-8"))
-    G, ann, zone, risque, vuln, lst_manque = produits_locaux()
+    G, ann, zone, risque, lst_manque = produits_locaux()
 
     sp = []
     for f in adm3["features"]:
@@ -233,13 +232,13 @@ def carte(G, ann, zone, risque, sp, cands, choisis, remplacants):
                     style="italic", color="#333", ha="center")
     from matplotlib.patches import Patch
     from matplotlib.lines import Line2D
-    h = [Patch(color=pal[k], label=f"Risque {NOM_RISQUE[k + 1].lower()}") for k in range(5)]
+    h = [Patch(color=pal[k], label=f"Aléa {NOM_RISQUE[k + 1].lower()}") for k in range(5)]
     h += [Line2D([], [], marker="o", ls="", mfc="#08306b", mec="white", ms=8, label="Village de l'observatoire"),
           Line2D([], [], marker="o", ls="", mfc="white", mec="#08306b", ms=7, label="Remplaçant"),
           Line2D([], [], color="#777", lw=.8, label="Sous-préfectures (geoBoundaries 2021)")]
     ax.legend(handles=h, loc="upper right", fontsize=7.5, framealpha=.95)
     ax.set_title("Observatoire de la sécheresse agricole — villages 2027\n"
-                 f"Marahoué · fond : risque SMADI (anomalie z ≥ {S.CFG['droughtThresholdZ']:.1f}, 2000–2026)", fontsize=11)
+                 f"Marahoué · fond : aléa SMADI (anomalie z ≥ {S.CFG['droughtThresholdZ']:.1f}, 2000–2026)", fontsize=11)
     ax.set_xlabel("Longitude (°)"); ax.set_ylabel("Latitude (°)")
     ax.set_aspect(1 / np.cos(np.radians(7.1)))
     ax.set_xlim(ext[0] - 0.05, ext[1] + 0.25); ax.set_ylim(ext[2] - 0.05, ext[3] + 0.05)

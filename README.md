@@ -9,9 +9,9 @@ sur GitHub Pages, des données en cache dans le dépôt.
 
 ## Ce que montre la page
 - Le **dernier mois calculé** : SMADI moyen de la région, anomalie z par rapport au même
-  mois des autres années, part de la région en sécheresse, part en risque fort ou très fort.
+  mois des autres années, part de la région en sécheresse, part en aléa fort ou très fort.
 - Une **carte à 0,01° (≈ 1,1 km)** au choix : SMADI ou anomalie z de l'un des 36 derniers
-  mois, risque, aléa, fréquence, durée, intensité, tendance, vulnérabilité ; avec les
+  mois, aléa, fréquence, durée, intensité, tendance, parts de cultures et d'arbres ; avec les
   surfaces par classe en km².
 - L'**évolution mensuelle** depuis 2000 (SMADI moyen + % de la région en sécheresse),
   la climatologie mois par mois et les années les plus sèches.
@@ -26,8 +26,11 @@ bornes par pixel sur toute la période, NDVI ≤ 0,1 masqué (Sánchez et al., 2
 - `scripts/smadi_marahoue.py`
   1. Earth Engine (API Python, `computePixels`) : entrées mensuelles sur la grille de la
      Marahoué — humidité du sol ERA5-Land (0–7 cm) en bilinéaire, LST de jour MODIS MOD11A2
-     (moyenne mensuelle, K) et NDVI MODIS MOD13A3 du mois précédent ; vulnérabilité à
-     partir de MODIS MCD12Q1 (IGBP).
+     (moyenne mensuelle, K) et NDVI MODIS MOD13A3 du mois précédent ; parts de cultures et
+     d'arbres ESA WorldCover v200 (10 m, 2021), à titre indicatif.
+     **Pas de carte de risque** (aléa × vulnérabilité) : MODIS MCD12Q1 classe 97 % de la
+     Marahoué en savane et ESA WorldCover n'y voit que 0,2 % de cultures (plantations comptées
+     en arbres). La page montre l'aléa ; une vulnérabilité fiable viendra des relevés de terrain.
      Écart avec l'application GEE : les mois où la LST Terra manque (nuages) sont comblés par
      la LST Aqua MYD11A2, dont on retire l'écart moyen Aqua − Terra du pixel (≈ 2,7 K).
      Pixels sans LST de juillet à octobre : 38–79 % → 6–28 %.
@@ -111,7 +114,7 @@ d'Ivoire) ; humidité du sol de modèle à ~9 km ; derniers mois provisoires ; p
 validation au champ. Résultats indicatifs.
 
 ## Sources
-NASA MODIS MOD13A3, MOD11A2, MCD12Q1 v061 (LP DAAC) ; ERA5-Land (Copernicus C3S/ECMWF) ;
+NASA MODIS MOD13A3, MOD11A2, MYD11A2 v061 (LP DAAC) ; ESA WorldCover v200 ; ERA5-Land (Copernicus C3S/ECMWF) ;
 geoBoundaries ; Google Earth Engine. Sánchez N. et al. (2016), *A new Soil Moisture
 Agricultural Drought Index (SMADI) integrating MODIS and SMOS products*, Int. J. Appl.
 Earth Obs. Geoinf. 51, 18–29.

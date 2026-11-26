@@ -23,7 +23,10 @@
  *   Durée      : durée moyenne des épisodes (mois consécutifs ≥ seuil)
  *   Intensité  : SMADI moyen des mois en sécheresse
  *   Aléa       : matrice fréquence (5 classes) × intensité (5 classes) → 5 classes
- *   Risque     : aléa × vulnérabilité agricole (occupation du sol) → 5 classes
+ *   Risque     : aléa × vulnérabilité agricole (occupation du sol) → 5 classes, INDICATIF :
+ *                MODIS MCD12Q1 voit mal les petites cultures d'Afrique de l'Ouest (Marahoué :
+ *                97 % classé « savane » ; ESA WorldCover ne fait pas mieux, 0,2 % de cultures).
+ *                L'aléa est donc la carte affichée par défaut.
  *   Tendance   : pente de Sen du SMADI moyen annuel (années complètes), par décennie
  *
  * Utilisation
@@ -421,7 +424,7 @@ function setStatus(t, isError) {
 // ---- Carte affichée ----
 panel.add(title('3. Carte affichée'));
 var LAYER_META = {
-  risk:  {name: 'Risque de sécheresse agricole', vis: {min: 1, max: 5, palette: PAL.level}, legend: LEVEL_NAMES},
+  risk:  {name: 'Risque (indicatif : occupation du sol MODIS)', vis: {min: 1, max: 5, palette: PAL.level}, legend: LEVEL_NAMES},
   alea:  {name: 'Aléa (fréquence × intensité)', vis: {min: 1, max: 5, palette: PAL.level}, legend: LEVEL_NAMES},
   freq:  {name: 'Fréquence (% des mois en sécheresse)', vis: {min: 0, max: 40, palette: PAL.freq},
           legend: ['0 %', '10 %', '20 %', '30 %', '≥ 40 %']},
@@ -439,10 +442,10 @@ var LAYER_META = {
   monthz: {name: 'Anomalie du mois (z)', vis: {min: -2, max: 2, palette: PAL.trend},
           legend: ['≤ −2 (plus humide que la normale)', '−1', '0 (normal)', '+1', '≥ +2 (plus sec que la normale)']}
 };
-var LAYER_ORDER = ['risk', 'alea', 'freq', 'dur', 'trend', 'month', 'monthz'];
+var LAYER_ORDER = ['alea', 'risk', 'freq', 'dur', 'trend', 'month', 'monthz'];
 var layerSelect = ui.Select({
   items: LAYER_ORDER.map(function (k) { return {label: LAYER_META[k].name, value: k}; }),
-  value: 'risk', style: {stretch: 'horizontal'}
+  value: 'alea', style: {stretch: 'horizontal'}
 });
 var monthSelect = ui.Select({placeholder: 'Mois', style: {stretch: 'horizontal'}});
 panel.add(layerSelect)
@@ -462,7 +465,7 @@ function setLegend(key) {
     ], ui.Panel.Layout.flow('horizontal')));
   });
 }
-setLegend('risk');
+setLegend('alea');
 
 // ---- Résultats ----
 panel.add(title('4. Évolution mensuelle'));
@@ -472,9 +475,9 @@ panel.add(chartPanel);
 
 panel.add(title('5. Surfaces par classe'));
 var areaSelect = ui.Select({
-  items: [{label: 'Risque', value: 'risk'}, {label: 'Aléa', value: 'alea'},
+  items: [{label: 'Aléa', value: 'alea'}, {label: 'Risque (indicatif)', value: 'risk'},
           {label: 'SMADI du mois sélectionné', value: 'month'}],
-  value: 'risk', style: {stretch: 'horizontal'}
+  value: 'alea', style: {stretch: 'horizontal'}
 });
 var areaPanel = ui.Panel();
 panel.add(areaSelect).add(areaPanel);
@@ -490,7 +493,8 @@ panel.add(note('SMADI(m) = SMCI(m) × LST(m−1)/LSTmax ÷ NDVI(m−1), avec SMC
   'Bornes min/max calculées par pixel sur toute la période. Pixels avec NDVI ≤ ' + CFG.ndviMin + ' masqués.'));
 panel.add(note('Aléa : classe de fréquence (seuils ' + CFG.freqBreaks.join(', ') + ' %) × classe d\'intensité ' +
   '(SMADI moyen des mois secs, seuils ' + CFG.intensityBreaks.join(', ') + '), regroupé en 5 classes.'));
-panel.add(note('Risque : aléa × vulnérabilité agricole (MODIS MCD12Q1 : cultures 5, mosaïque 4, ' +
+panel.add(note('Risque (indicatif) : aléa × vulnérabilité agricole. MODIS MCD12Q1 voit mal les petites cultures ' +
+  'd\'Afrique de l\'Ouest (Marahoué : 97 % classé savane) ; préférer l\'aléa. Poids : cultures 5, mosaïque 4, ' +
   'prairies et savanes 3, fourrés 2, forêts 1, urbain/sol nu/eau exclus).'));
 panel.add(note('Anomalie mensuelle : z = (SMADI − moyenne du même mois) / écart-type du même mois, ' +
   'par pixel sur toute la période. Mois sec si z ≥ ' + CFG.droughtThresholdZ + ' par défaut. ' +
