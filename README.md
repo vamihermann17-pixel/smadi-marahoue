@@ -94,6 +94,11 @@ python smadi_marahoue.py
 ```
 Puis ouvrir `docs/index.html` via un petit serveur (`python -m http.server -d docs`).
 
+## Validation
+Voir [VALIDATION.md](VALIDATION.md) (`scripts/validation_smadi.py`) : le SMADI suit l'eau du sol
+TAMSAT-ALERT (r ≈ −0,6 à −0,7) et la pluie, surtout de septembre à mars, mal d'avril à juin ;
+seuil conseillé pour une veille z ≥ 1,0 (z ≥ 1,5 = sécheresses sévères).
+
 ## Limites
 Seuils de classes indicatifs (ceux du mode anomalie ont été calés sur toute la Côte
 d'Ivoire) ; humidité du sol de modèle à ~9 km ; derniers mois provisoires ; pas de
