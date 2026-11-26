@@ -192,7 +192,7 @@ a{color:var(--water)}
         </ol></div>
         <div><h3>Méthode</h3><ul>
           <li>SMADI(m) = SMCI(m) × LST(m−1)/LSTmax ÷ NDVI(m−1), avec SMCI = (SMmax − SM)/(SMmax − SMmin), bornes par pixel sur toute la période ; pixels avec NDVI ≤ 0,1 masqués.</li>
-          <li>NDVI MODIS MOD13A3 et LST de jour MODIS MOD11A2 (1 km) ; humidité du sol <span id="mSrc"></span>, rééchantillonnée en bilinéaire.</li>
+          <li>NDVI MODIS MOD13A3 et LST de jour MODIS Terra MOD11A2 (1 km), complétée par Aqua MYD11A2 sous les nuages ; humidité du sol <span id="mSrc"></span>, rééchantillonnée en bilinéaire.</li>
           <li>Anomalie z = (SMADI − moyenne du même mois) / écart-type du même mois, par pixel.</li>
           <li>Aléa : classe de fréquence × classe d'intensité, regroupé en 5 classes. Risque : aléa × vulnérabilité (MODIS MCD12Q1 : cultures 5, mosaïque 4, savanes et prairies 3, fourrés 2, forêts 1).</li>
           <li>Tendance : pente de Sen du SMADI moyen annuel, par décennie (positive = assèchement).</li>
@@ -200,7 +200,7 @@ a{color:var(--water)}
         <div><h3>Limites</h3><ul>
           <li>Seuils de classes indicatifs, repris de l'application SMADI ; ceux du mode anomalie ont été calés sur toute la Côte d'Ivoire.</li>
           <li>L'humidité du sol vient d'un modèle à ~9 km : le détail à 1 km vient de MODIS (LST, NDVI).</li>
-          <li>Nuages : la température de surface MODIS manque souvent en saison des pluies (38 à 79 % des pixels pour les SMADI d'août à novembre). Les cartes de ces mois ont des trous blancs, et la moyenne de la région ne porte que sur les pixels visibles.</li>
+          <li>Nuages : en saison des pluies, la température de surface de MODIS Terra manque souvent (jusqu'à 79 % des pixels). Les trous sont comblés par MODIS Aqua, ramené au niveau de Terra (écart moyen de 2,7 K retiré par pixel et par mois). Il reste 6 à 28 % de pixels blancs de juillet à septembre ; la moyenne de la région ne porte que sur les pixels visibles.</li>
           <li>Le dernier mois dépend de la source la plus lente (ERA5-Land : 1 à 3 mois de retard). Les mois récents peuvent encore être corrigés.</li>
           <li>Non validé au champ : à croiser avec les observations des agents et des producteurs.</li>
         </ul></div>

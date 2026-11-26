@@ -26,6 +26,9 @@ bornes par pixel sur toute la période, NDVI ≤ 0,1 masqué (Sánchez et al., 2
      Marahoué — humidité du sol ERA5-Land (0–7 cm) en bilinéaire, LST de jour MODIS MOD11A2
      (moyenne mensuelle, K) et NDVI MODIS MOD13A3 du mois précédent ; vulnérabilité à
      partir de MODIS MCD12Q1 (IGBP).
+     Écart avec l'application GEE : les mois où la LST Terra manque (nuages) sont comblés par
+     la LST Aqua MYD11A2, dont on retire l'écart moyen Aqua − Terra du pixel (≈ 2,7 K).
+     Pixels sans LST de juillet à octobre : 38–79 % → 6–28 %.
   2. Calcul local (numpy) du SMADI, des anomalies z et des produits, avec les seuils de
      `CFG` et `VULN` repris de l'application.
   3. Sorties : `docs/smadi_marahoue.json` (page) et `docs/serie_smadi_marahoue.csv`
