@@ -43,13 +43,19 @@ var CFG = {
   smadiBreaks: [0.5, 1.0, 2.0, 3.0],        // classes SMADI (bornes inférieures)
   freqBreaks: [5, 10, 20, 30],              // % de mois en sécheresse → classes 1..5
   intensityBreaks: [1.5, 2.0, 2.5, 3.0],    // SMADI moyen des mois secs → classes 1..5
-  // Mode anomalie : seuils FIXES calés sur la distribution observée en Côte d'Ivoire
-  // (TAMSAT-SM, mars 2000 → oct. 2026, z ≥ 1,5, pixels de 5 km) : quantiles nationaux
-  // 20/40/60/80. Les anomalies étant standardisées par pixel, fréquence et intensité
-  // varient peu dans l'espace (fréquence 6,7–10 %, intensité z 1,96–2,30 entre P5 et P95).
-  droughtThresholdZ: 1.5,                    // z ≥ seuil → mois en sécheresse
-  freqBreaksZ: [7.5, 8.1, 8.6, 9.2],         // % de mois avec z ≥ 1,5 → classes 1..5
-  intensityBreaksZ: [2.03, 2.09, 2.14, 2.21], // z moyen des mois secs → classes 1..5
+  // Mode anomalie : z ≥ 1,0 par défaut. La validation en Marahoué (2005–2026, contre l'eau
+  // du sol TAMSAT-ALERT) donne le meilleur score de détection à z ≥ 1,0 ; z ≥ 1,5 manque
+  // trois mois secs sur quatre et ne repère que les sécheresses sévères (VALIDATION.md du
+  // dépôt smadi-marahoue).
+  droughtThresholdZ: 1.0,                    // z ≥ seuil → mois en sécheresse
+  // Bornes des classes de fréquence et d'intensité selon le seuil : quantiles nationaux
+  // 20/40/60/80 de la Côte d'Ivoire. 1,0 : ERA5-Land + LST Terra/Aqua, 0,05°, mars 2000 →
+  // oct. 2026 (calibrer_seuils_z.py) ; 1,5 : TAMSAT-SM, pixels de 5 km, même période.
+  // Pour un autre seuil, les bornes du seuil le plus proche sont utilisées (avertissement).
+  breaksZ: {
+    '1.0': {freq: [14.7, 15.5, 16.2, 16.9], intensity: [1.61, 1.67, 1.72, 1.77], vis: [13, 18]},
+    '1.5': {freq: [7.5, 8.1, 8.6, 9.2], intensity: [2.03, 2.09, 2.14, 2.21], vis: [6, 10]}
+  },
   aleaBreaks: [3, 5, 9, 15],                // score fréquence×intensité (1..25) → 1..5
   riskBreaks: [4, 7, 12, 18],               // score aléa×vulnérabilité (1..25) → 1..5
   ndviMin: 0.1,                             // masque sol nu / eau
@@ -387,7 +393,7 @@ function updateMethodNote() {
   if (!z && v === String(CFG.droughtThresholdZ)) thrBox.setValue(String(CFG.droughtThreshold));
   methodNote.setValue(z
     ? 'Un mois est sec si son SMADI dépasse la normale de ce mois (moyenne sur toute la période) ' +
-      'de plus de « seuil » écarts-types (1,5 = anomalie sévère, 2 = extrême). ' +
+      'de plus de « seuil » écarts-types (1 = sécheresse anormale, conseillé ; 1,5 = sévère ; 2 = extrême). ' +
       'Supprime l\'effet de la saison sèche.'
     : 'Un mois est sec si son SMADI dépasse le seuil. En zone à saison sèche marquée, ' +
       'chaque saison sèche compte comme une sécheresse.');
@@ -487,9 +493,10 @@ panel.add(note('Aléa : classe de fréquence (seuils ' + CFG.freqBreaks.join(', 
 panel.add(note('Risque : aléa × vulnérabilité agricole (MODIS MCD12Q1 : cultures 5, mosaïque 4, ' +
   'prairies et savanes 3, fourrés 2, forêts 1, urbain/sol nu/eau exclus).'));
 panel.add(note('Anomalie mensuelle : z = (SMADI − moyenne du même mois) / écart-type du même mois, ' +
-  'par pixel sur toute la période. Mois sec si z ≥ ' + CFG.droughtThresholdZ + ' par défaut ; ' +
-  'seuils de fréquence ' + CFG.freqBreaksZ.join(', ') + ' % ; seuils d\'intensité en z ' +
-  CFG.intensityBreaksZ.join(', ') + '.'));
+  'par pixel sur toute la période. Mois sec si z ≥ ' + CFG.droughtThresholdZ + ' par défaut. ' +
+  'Classes calées sur la Côte d\'Ivoire pour z ≥ 1 (fréquence ' + CFG.breaksZ['1.0'].freq.join(', ') +
+  ' % ; intensité ' + CFG.breaksZ['1.0'].intensity.join(', ') + ') et z ≥ 1,5 (fréquence ' +
+  CFG.breaksZ['1.5'].freq.join(', ') + ' % ; intensité ' + CFG.breaksZ['1.5'].intensity.join(', ') + ').'));
 panel.add(note('Tendance : pente de Sen du SMADI moyen annuel (années complètes). Positive = assèchement.'));
 panel.add(note('Seuils indicatifs, modifiables dans CFG en tête du script.'));
 
@@ -657,6 +664,19 @@ function zoneMaskOf(g) {
   return ee.Image.constant(1).clip(g).mask();
 }
 
+// Bornes des classes du mode anomalie pour le seuil choisi (seuil calé le plus proche)
+function breaksForZ(thr) {
+  var best = null, d = Infinity;
+  Object.keys(CFG.breaksZ).forEach(function (k) {
+    var e = Math.abs(Number(k) - thr);
+    if (e < d) { d = e; best = k; }
+  });
+  var b = CFG.breaksZ[best];
+  b.note = d > 0.05 ? ' Attention : classes calées pour z ≥ ' + best.replace('.', ',') +
+    ', pas pour z ≥ ' + String(thr).replace('.', ',') + '.' : '';
+  return b;
+}
+
 function run() {
   var zone = getZone();
   if (!zone) return;
@@ -673,15 +693,19 @@ function run() {
   var dBand = method === 'z' ? 'z' : 'smadi';
   var col = withAnomalies(buildSmadi(smKey, p.millis));
   var z = method === 'z';
+  var bz = breaksForZ(thr);
   var P = buildProducts(col, dBand, thr,
-    z ? CFG.freqBreaksZ : CFG.freqBreaks,
-    z ? CFG.intensityBreaksZ : CFG.intensityBreaks, p.firstFullYear, p.lastFullYear);
-  // Échelle de la carte de fréquence adaptée au mode (les anomalies sévères sont rares)
-  LAYER_META.freq.vis.min = z ? 6 : 0;
-  LAYER_META.freq.vis.max = z ? 10 : 40;
-  LAYER_META.freq.legend = z ? ['≤ 6 %', '7 %', '8 %', '9 %', '≥ 10 %']
+    z ? bz.freq : CFG.freqBreaks,
+    z ? bz.intensity : CFG.intensityBreaks, p.firstFullYear, p.lastFullYear);
+  // Échelle de la carte de fréquence adaptée au mode et au seuil
+  var v0 = bz.vis[0], v1 = bz.vis[1];
+  LAYER_META.freq.vis.min = z ? v0 : 0;
+  LAYER_META.freq.vis.max = z ? v1 : 40;
+  LAYER_META.freq.legend = z ? ['≤ ' + v0 + ' %', String(v0 + (v1 - v0) / 4) + ' %',
+                                String(v0 + (v1 - v0) / 2) + ' %', String(v0 + 3 * (v1 - v0) / 4) + ' %', '≥ ' + v1 + ' %']
                              : ['0 %', '10 %', '20 %', '30 %', '≥ 40 %'];
   setLegend(layerSelect.getValue());
+  if (z && bz.note) setStatus(statusLabel.getValue() + bz.note, false);
   var g = zone.geom;
   var zm = zoneMaskOf(g);
   CUR = {geom: g, zoneMask: zm, col: col, dBand: dBand, method: method,

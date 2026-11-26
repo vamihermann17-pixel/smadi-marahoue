@@ -600,6 +600,12 @@ def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=No
         "serie": serie,
         "cartes_mois": cartes_mois,
     }
+    # Résumé léger du dernier mois, lu par la page des fenêtres de semis
+    with open(os.path.join(OUTDIR, "resume_smadi.json"), "w", encoding="utf-8") as f:
+        json.dump({**out["dernier_mois"], "seuil_z": CFG["droughtThresholdZ"],
+                   "periode": out["meta"]["periode"], "genere": out["meta"]["genere"],
+                   "page": "https://vamihermann17-pixel.github.io/smadi-marahoue/"},
+                  f, ensure_ascii=False)
     chemin = os.path.join(OUTDIR, "smadi_marahoue.json")
     with open(chemin, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
