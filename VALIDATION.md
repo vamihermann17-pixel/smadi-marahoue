@@ -78,16 +78,19 @@ l'échelle de la saison, le bilan hydrique décrit mieux la végétation que le 
 
 ## Vérification au champ (saison 2027)
 Protocole : [docs/fiche_terrain.html](docs/fiche_terrain.html) (2 pages A4 à imprimer).
-- **Villages** : 12 à 15, répartis dans les trois départements (Bouaflé, Sinfra, Zuénoula),
-  du nord au sud et des savanes aux zones plus boisées ; coordonnées GPS du centre du village.
+- **Villages** : 15 titulaires et 5 remplaçants proposés dans [terrain/](terrain/LISEZMOI.md)
+  (`villages_observatoire.csv`, carte, relevés pré-remplis `releves_2027.csv`) : 15
+  sous-préfectures différentes, 12 km au moins entre deux villages, toutes les classes de
+  risque SMADI. À valider avec l'ANADER et les services agricoles.
 - **Fréquence** : une fiche par village et par mois, d'avril à novembre (dans les 5 derniers
   jours du mois), toujours par le même observateur.
 - **Observations** : comparaison du mois à un mois normal (question principale, 1 à 5),
   pluie perçue et pluviomètre s'il existe, part des parcelles flétries en milieu de journée
   (au moins 10 parcelles), état des cultures, savane, points d'eau ; en novembre, récolte
   comparée à une année normale et perte due au manque d'eau.
-- **Saisie** : une ligne par fiche dans [docs/releves_terrain_modele.csv](docs/releves_terrain_modele.csv).
-- **Comparaison** : `python scripts/comparer_terrain.py releves_2027.csv` → corrélations entre
+- **Saisie** : une ligne par fiche dans `terrain/releves_2027.csv` (déjà rempli avec les villages
+  et les mois), au format de [docs/releves_terrain_modele.csv](docs/releves_terrain_modele.csv).
+- **Comparaison** : `python scripts/comparer_terrain.py terrain/releves_2027.csv` → corrélations entre
   l'anomalie z du SMADI (rayon de 3 km autour du village) et chaque observation, alertes
   z ≥ 1,0 contre « plus sec », récolte contre le SMADI de juin à octobre
   (`validation/validation_terrain.json`). 12 villages × 8 mois ≈ 100 relevés par saison ;

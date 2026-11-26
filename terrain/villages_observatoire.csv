@@ -1,0 +1,21 @@
+﻿code;statut;nom;sous_prefecture;lat;lon;classe;lst_manquante;osm_id
+MAR01;titulaire;Zérifla;Voueboufla;7.6796;-5.9899;Faible;0.113;2972423885
+MAR02;titulaire;Bongofla;Gohitafla;7.5391;-5.7872;Moyen;0.115;443316268
+MAR03;titulaire;Bouata;Zanzra;7.5321;-6.2312;Moyen;0.125;443314232
+MAR04;titulaire;Drikouaïfla 2;Zuénoula;7.4272;-6.0087;Fort;0.122;3013759696
+MAR05;titulaire;Kouablézra;Kanzra;7.2797;-6.2468;Moyen;0.136;13160854893
+MAR06;titulaire;Bouafla;Tibéita;7.2523;-5.85;Moyen;0.158;3156255484
+MAR07;titulaire;Aka-N'Guessankro;Pakouabo;7.1417;-5.7399;Faible;0.092;2969724682
+MAR08;titulaire;Pakogui;Bouaflé;6.9954;-5.635;Faible;0.152;3014802217
+MAR09;titulaire;Gobazra;Bonon;6.945;-5.9694;Moyen;0.166;443318405
+MAR10;titulaire;Ndenoukro;N'Douffoukankro;6.9016;-5.8466;Fort;0.163;2971904431
+MAR11;titulaire;Zaguiéta;Zaguiéta;6.7881;-6.0629;Fort;0.197;2948426980
+MAR12;titulaire;Koadi;Bazré;6.7256;-5.4841;Fort;0.187;13153833035
+MAR13;titulaire;Yaokro;Sinfra;6.7237;-5.8407;Fort;0.164;10109774924
+MAR14;titulaire;Manoufla;Kononfla;6.6204;-5.6244;Moyen;0.144;443319264
+MAR15;titulaire;Allakonanbakro;Kouétinfla;6.6068;-6.0736;Faible;0.165;10111339332
+MAR-R5;remplaçant;Zemenafla;Sinfra;6.553;-5.7833;Moyen;0.146;2969606341
+MAR-R4;remplaçant;Suéfla;Bouaflé;6.8425;-5.6848;Fort;0.186;2971705215
+MAR-R1;remplaçant;Duanoufla;Zuénoula;7.5592;-6.0823;Moyen;0.11;3297802363
+MAR-R2;remplaçant;Maminigui;Maminigui;7.4018;-5.8408;Faible;0.139;2948426571
+MAR-R3;remplaçant;Quiéizra;Kanzra;7.3919;-6.1602;Moyen;0.132;13160854891
