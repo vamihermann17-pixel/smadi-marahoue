@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fiche terrain sécheresse</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.35 "Segoe UI", Arial, sans-serif; color: #111; background: #fff; margin: 0; padding: 0 12px; }
+  .page { page-break-after: always; max-width: 186mm; margin: 0 auto 10mm; }
+  .page:last-child { page-break-after: auto; }
+  h1 { font-size: 15pt; margin: 0 0 2mm; }
+  h2 { font-size: 11.5pt; margin: 5mm 0 2mm; border-bottom: 1.5px solid #111; padding-bottom: 1mm; }
+  p { margin: 0 0 2mm; }
+  .petit { font-size: 8.5pt; color: #333; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid #555; padding: 1.6mm 2mm; vertical-align: top; }
+  th { background: #eee; font-weight: 600; text-align: left; font-size: 9pt; }
+  .champ td { height: 9mm; }
+  .lignes td { height: 8mm; }
+  .case { display: inline-block; width: 3.2mm; height: 3.2mm; border: 1px solid #111; margin: 0 1mm 0 3mm; vertical-align: -0.5mm; }
+  .num { display: inline-block; min-width: 4mm; font-weight: 700; }
+  .bouton { position: fixed; top: 10px; right: 10px; padding: 8px 14px; font: 600 11pt "Segoe UI", sans-serif; }
+  .ecran { max-width: 186mm; margin: 12px auto; padding: 10px 12px; border: 1px solid #bbb; border-radius: 6px; background: #f6f6f2; font-size: 10pt; }
+  @media print { .bouton, .ecran { display: none; } body { padding: 0; } }
+  @media (max-width: 700px) { .page { overflow-x: auto; } }
+</style>
+</head>
+<body>
+<button class="bouton" onclick="window.print()">Imprimer</button>
+<div class="ecran">Fiche à imprimer (2 pages A4). Une fiche par village et par mois, d'avril à novembre. Les relevés se saisissent ensuite dans <a href="releves_terrain_modele.csv" download>releves_terrain_modele.csv</a> (une ligne par fiche) ; le script <code>comparer_terrain.py</code> les compare au SMADI. Retour à la <a href="./">page SMADI</a>.</div>
+
+<div class="page">
+  <h1>Observatoire de la sécheresse agricole — Marahoué 2027</h1>
+  <p class="petit">Une fiche par village et par mois, remplie dans les 5 derniers jours du mois. Le même observateur suit le même village toute la saison. Ne pas écrire le nom des producteurs.</p>
+
+  <h2>1. Village et visite</h2>
+  <table class="champ">
+    <tr><th style="width:22%">Village</th><td style="width:28%"></td><th style="width:20%">Code village</th><td></td></tr>
+    <tr><th>Département</th><td colspan="3">Bouaflé<span class="case"></span> Sinfra<span class="case"></span> Zuénoula<span class="case"></span></td></tr>
+    <tr><th>Latitude (° N)</th><td></td><th>Longitude (° O)</th><td></td></tr>
+    <tr><th>Mois observé</th><td></td><th>Date de la visite</th><td></td></tr>
+    <tr><th>Code observateur</th><td></td><th>Parcelles visitées</th><td></td></tr>
+  </table>
+  <p class="petit">Coordonnées au centre du village (téléphone, en degrés décimaux, 3 chiffres après la virgule). Visiter au moins <b>10 parcelles</b> cultivées autour du village, réparties dans plusieurs directions.</p>
+
+  <h2>2. La question principale</h2>
+  <table class="champ">
+    <tr><th style="width:40%">Par rapport à un mois de ce nom dans une année normale, ce mois a été…</th>
+      <td><span class="num">1</span>beaucoup plus humide<span class="case"></span><br><span class="num">2</span>plus humide<span class="case"></span><br><span class="num">3</span>normal<span class="case"></span><br><span class="num">4</span>plus sec<span class="case"></span><br><span class="num">5</span>beaucoup plus sec<span class="case"></span></td></tr>
+  </table>
+  <p class="petit">Demander à 3 producteurs âgés (plus de 15 saisons) et noter la réponse la plus fréquente. « Normal » = comme la plupart des années.</p>
+
+  <h2>3. Pluie</h2>
+  <table class="champ">
+    <tr><th style="width:40%">Pluie du mois, d'après les producteurs</th>
+      <td><span class="num">1</span>bien en dessous<span class="case"></span> <span class="num">2</span>en dessous<span class="case"></span> <span class="num">3</span>normale<span class="case"></span> <span class="num">4</span>au-dessus<span class="case"></span> <span class="num">5</span>bien au-dessus<span class="case"></span></td></tr>
+    <tr><th>Total du pluviomètre du village (mm), s'il existe</th><td></td></tr>
+    <tr><th>Plus longue suite de jours sans pluie dans le mois (jours)</th><td></td></tr>
+  </table>
+
+  <h2>4. Cultures en place</h2>
+  <table class="champ">
+    <tr><th style="width:40%">Parcelles visitées où les plantes sont <b>flétries en milieu de journée</b></th><td>........ sur ........ parcelles visitées</td></tr>
+    <tr><th>Parcelles où les feuilles restent enroulées ou jaunies le matin</th><td>........ sur ........</td></tr>
+    <tr><th>État général des cultures du village</th>
+      <td><span class="num">1</span>très bon<span class="case"></span> <span class="num">2</span>bon<span class="case"></span> <span class="num">3</span>moyen<span class="case"></span> <span class="num">4</span>mauvais<span class="case"></span> <span class="num">5</span>très mauvais<span class="case"></span></td></tr>
+    <tr><th>Cause principale si mauvais</th><td>manque d'eau<span class="case"></span> excès d'eau<span class="case"></span> ravageurs, maladies<span class="case"></span> autre<span class="case"></span></td></tr>
+    <tr><th>Parcelles ressemées ou abandonnées ce mois à cause du sec</th><td></td></tr>
+  </table>
+
+  <h2>5. Végétation naturelle et eau</h2>
+  <table class="champ">
+    <tr><th style="width:40%">Savane et jachères autour du village</th>
+      <td><span class="num">1</span>vertes<span class="case"></span> <span class="num">2</span>jaunissantes<span class="case"></span> <span class="num">3</span>sèches<span class="case"></span> <span class="num">4</span>brûlées<span class="case"></span></td></tr>
+    <tr><th>Bas-fonds, puits, marigots</th>
+      <td><span class="num">1</span>niveau normal<span class="case"></span> <span class="num">2</span>bas<span class="case"></span> <span class="num">3</span>à sec<span class="case"></span></td></tr>
+  </table>
+</div>
+
+<div class="page">
+  <h1>Observatoire de la sécheresse — suite</h1>
+  <table class="champ"><tr><th style="width:22%">Code village</th><td style="width:28%"></td><th style="width:20%">Mois observé</th><td></td></tr></table>
+
+  <h2>6. Bilan de fin de saison (fiche de novembre seulement)</h2>
+  <table class="champ">
+    <tr><th style="width:40%">Récolte du village par rapport à une année normale</th>
+      <td><span class="num">1</span>bien meilleure<span class="case"></span> <span class="num">2</span>meilleure<span class="case"></span> <span class="num">3</span>normale<span class="case"></span> <span class="num">4</span>moins bonne<span class="case"></span> <span class="num">5</span>bien moins bonne<span class="case"></span></td></tr>
+    <tr><th>Perte estimée due au manque d'eau (% de la récolte normale)</th><td></td></tr>
+    <tr><th>Mois les plus difficiles pour les cultures (cocher)</th>
+      <td>avr.<span class="case"></span> mai<span class="case"></span> juin<span class="case"></span> juil.<span class="case"></span> août<span class="case"></span> sept.<span class="case"></span> oct.<span class="case"></span> nov.<span class="case"></span></td></tr>
+    <tr><th>Culture la plus touchée</th><td>riz<span class="case"></span> maïs<span class="case"></span> arachide<span class="case"></span> igname<span class="case"></span> manioc<span class="case"></span> autre<span class="case"></span></td></tr>
+  </table>
+
+  <h2>Remarques (événements, feux, inondations, ravageurs…)</h2>
+  <table class="lignes"><tr><td style="height:32mm"></td></tr></table>
+
+  <h2>Saisie (à faire au bureau)</h2>
+  <p class="petit">Une ligne par fiche dans <b>releves_terrain_modele.csv</b> (séparateur « ; »). Recopier les chiffres en gras des cases cochées. Laisser vide ce qui n'a pas été observé.</p>
+  <table>
+    <tr><th style="width:30%">Colonne</th><th>Contenu</th></tr>
+    <tr><td>village ; code_village</td><td>nom et code du village</td></tr>
+    <tr><td>lat ; lon</td><td>degrés décimaux, longitude <b>négative</b> (ex. 6.990 ; −5.745)</td></tr>
+    <tr><td>mois</td><td>mois observé, format AAAA-MM (ex. 2027-07)</td></tr>
+    <tr><td>comparaison_normale</td><td>1 à 5 (question principale)</td></tr>
+    <tr><td>pluie_percue ; pluie_mm ; jours_secs_max</td><td>1 à 5 ; mm ; jours</td></tr>
+    <tr><td>parcelles_vues ; parcelles_fletries</td><td>nombres</td></tr>
+    <tr><td>etat_cultures ; cause</td><td>1 à 5 ; eau, exces, ravageurs, autre</td></tr>
+    <tr><td>savane ; points_eau ; ressemis</td><td>1 à 4 ; 1 à 3 ; nombre</td></tr>
+    <tr><td>recolte_vs_normale ; perte_pct</td><td>novembre seulement : 1 à 5 ; %</td></tr>
+    <tr><td>code_observateur ; remarques</td><td>texte court</td></tr>
+  </table>
+  <p class="petit" style="margin-top:3mm">Observateur : ................................ &nbsp;&nbsp; Signature : ................................</p>
+</div>
+</body>
+</html>

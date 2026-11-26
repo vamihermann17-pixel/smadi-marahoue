@@ -101,6 +101,10 @@ Voir [VALIDATION.md](VALIDATION.md) (`scripts/validation_smadi.py`) : le SMADI s
 TAMSAT-ALERT (r ≈ −0,6 à −0,7) et la pluie, surtout de septembre à mars, mal d'avril à juin ;
 seuil retenu pour la page z ≥ 1,0 (z ≥ 1,5 = sécheresses sévères).
 
+Vérification au champ en 2027 : fiche mensuelle par village
+([docs/fiche_terrain.html](docs/fiche_terrain.html), page web `fiche_terrain.html`), modèle de
+saisie `docs/releves_terrain_modele.csv`, comparaison `scripts/comparer_terrain.py`.
+
 ## Limites
 Seuils de classes indicatifs (ceux du mode anomalie ont été calés sur toute la Côte
 d'Ivoire) ; humidité du sol de modèle à ~9 km ; derniers mois provisoires ; pas de

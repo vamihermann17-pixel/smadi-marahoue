@@ -76,6 +76,25 @@ l'échelle de la saison, le bilan hydrique décrit mieux la végétation que le 
   mailles de 28 km, 20 saisons. Une vérification avec les observations des agents agricoles
   (rendements, dates de flétrissement) reste à faire.
 
+## Vérification au champ (saison 2027)
+Protocole : [docs/fiche_terrain.html](docs/fiche_terrain.html) (2 pages A4 à imprimer).
+- **Villages** : 12 à 15, répartis dans les trois départements (Bouaflé, Sinfra, Zuénoula),
+  du nord au sud et des savanes aux zones plus boisées ; coordonnées GPS du centre du village.
+- **Fréquence** : une fiche par village et par mois, d'avril à novembre (dans les 5 derniers
+  jours du mois), toujours par le même observateur.
+- **Observations** : comparaison du mois à un mois normal (question principale, 1 à 5),
+  pluie perçue et pluviomètre s'il existe, part des parcelles flétries en milieu de journée
+  (au moins 10 parcelles), état des cultures, savane, points d'eau ; en novembre, récolte
+  comparée à une année normale et perte due au manque d'eau.
+- **Saisie** : une ligne par fiche dans [docs/releves_terrain_modele.csv](docs/releves_terrain_modele.csv).
+- **Comparaison** : `python scripts/comparer_terrain.py releves_2027.csv` → corrélations entre
+  l'anomalie z du SMADI (rayon de 3 km autour du village) et chaque observation, alertes
+  z ≥ 1,0 contre « plus sec », récolte contre le SMADI de juin à octobre
+  (`validation/validation_terrain.json`). 12 villages × 8 mois ≈ 100 relevés par saison ;
+  au moins 20 relevés pour un premier résultat.
+- La même saison, les parcelles suivies avec la fiche des fenêtres de semis donnent les
+  dates de flétrissement par parcelle, à comparer aussi.
+
 ## Suite donnée (novembre 2026)
 La page utilise désormais **z ≥ 1,0**. Les bornes des classes de fréquence et d'intensité ont été
 recalées comme dans l'application (quantiles nationaux 20/40/60/80 %), avec la même chaîne de
