@@ -218,6 +218,11 @@ def lst_col():
     return init_ee().ImageCollection("MODIS/061/MOD11A2").select("LST_Day_1km")
 
 
+def lst_aqua_col():
+    """LST de jour Aqua (13 h 30), pour combler les trous nuageux de Terra (10 h 30)."""
+    return init_ee().ImageCollection("MODIS/061/MYD11A2").select("LST_Day_1km")
+
+
 def periode_disponible(src):
     """Premier et dernier mois SMADI calculables (même règle que l'application)."""
     ee = init_ee()
@@ -270,7 +275,7 @@ def compute_pixels(img, G, essais=4):
 
 
 def telecharger_annee(src, mois, G):
-    """Entrées des mois donnés (indices) : sm(m), lst(m−1) en K, ndvi(m−1)."""
+    """Entrées des mois donnés (indices) : sm(m), lst(m−1) Terra et lsta(m−1) Aqua en K, ndvi(m−1)."""
     ee = init_ee()
     bandes = None
     for i in mois:
@@ -279,12 +284,13 @@ def telecharger_annee(src, mois, G):
         p = d.advance(-1, "month")
         sm = monthly_image(src.col, d, src.how, f"sm_{m:02d}").setDefaultProjection(src.proj).resample("bilinear")
         lst = monthly_image(lst_col(), p, "mean", f"lst_{m:02d}").multiply(0.02)
+        lsta = monthly_image(lst_aqua_col(), p, "mean", f"lsta_{m:02d}").multiply(0.02)
         ndvi = monthly_image(ndvi_col(), p, "first", f"ndvi_{m:02d}").multiply(0.0001)
-        b = sm.addBands(lst).addBands(ndvi)
+        b = sm.addBands(lst).addBands(lsta).addBands(ndvi)
         bandes = b if bandes is None else bandes.addBands(b)
     arr = compute_pixels(bandes, G)
     out = {}
-    for v in ("sm", "lst", "ndvi"):
+    for v in ("sm", "lst", "lsta", "ndvi"):
         x = np.stack([np.asarray(arr[f"{v}_{ym(i)[1]:02d}"], np.float32) for i in mois])
         x[x <= NODATA + 1] = np.nan
         out[v] = x
@@ -311,9 +317,9 @@ def lire_cache(chemin, G):
     if not os.path.exists(chemin):
         return None
     z = np.load(chemin)
-    if list(z["grille"]) != [G["x0"], G["y1"], G["res"], G["w"], G["h"]]:
+    if list(z["grille"]) != [G["x0"], G["y1"], G["res"], G["w"], G["h"]] or "lsta" not in z.files:
         return None
-    return {"mois": list(z["mois"]), "sm": z["sm"], "lst": z["lst"], "ndvi": z["ndvi"]}
+    return {"mois": list(z["mois"]), "sm": z["sm"], "lst": z["lst"], "lsta": z["lsta"], "ndvi": z["ndvi"]}
 
 
 def entrees(src, debut, fin, G, relire=4):
@@ -329,12 +335,11 @@ def entrees(src, debut, fin, G, relire=4):
         if c is None or c["mois"] != mois or recent:
             print(f"  {annee} : téléchargement de {len(mois)} mois")
             d = telecharger_annee(src, mois, G)
-            np.savez_compressed(chemin, mois=np.array(mois), sm=d["sm"], lst=d["lst"], ndvi=d["ndvi"],
+            np.savez_compressed(chemin, mois=np.array(mois), sm=d["sm"], lst=d["lst"], lsta=d["lsta"], ndvi=d["ndvi"],
                                 grille=np.array([G["x0"], G["y1"], G["res"], G["w"], G["h"]]))
             c = {"mois": mois, **d}
         blocs.append(c)
-    return (np.concatenate([b["sm"] for b in blocs]), np.concatenate([b["lst"] for b in blocs]),
-            np.concatenate([b["ndvi"] for b in blocs]))
+    return tuple(np.concatenate([b[v] for b in blocs]) for v in ("sm", "lst", "lsta", "ndvi"))
 
 
 def vulnerabilite(G):
@@ -351,6 +356,33 @@ def vulnerabilite(G):
 
 
 # ============================ CALCUL (numpy) =================================
+def combler_lst(lst, lsta, mois, zone, min_paires=3):
+    """Comble les mois où la LST Terra manque (nuages) avec la LST Aqua, ramenée au niveau
+    de Terra : on retire l'écart moyen Aqua − Terra du pixel pour ce mois de l'année
+    (au moins `min_paires` mois communs), sinon l'écart moyen du pixel toutes saisons."""
+    cal = np.array([ym(i)[1] for i in mois])
+    diff = lsta - lst
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        ecart_tout = np.nanmean(diff, 0)
+        ecart = np.empty_like(lst)
+        for m in range(1, 13):
+            k = cal == m
+            n = np.sum(~np.isnan(diff[k]), 0)
+            e = np.where(n >= min_paires, np.nanmean(diff[k], 0), ecart_tout)
+            ecart[k] = e
+    trou = np.isnan(lst)
+    rempli = np.where(trou, lsta - ecart, lst).astype(np.float32)
+    avant = np.isnan(lst[:, zone]).mean(1)
+    apres = np.isnan(rempli[:, zone]).mean(1)
+    stats = {str(m): [round(100 * float(avant[cal == m].mean()), 1), round(100 * float(apres[cal == m].mean()), 1)]
+             for m in range(1, 13) if (cal == m).any()}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        stats["ecart_moyen_K"] = round(float(np.nanmean(ecart_tout[zone])), 2)
+    return rempli, stats
+
+
 def calcul_smadi(sm, lst, ndvi):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
@@ -484,12 +516,15 @@ def main():
     src = Source(cle)
     debut, fin = periode_disponible(src)
     print(f"Source {src.label} : {lbl(debut)} → {lbl(fin)} ({fin - debut + 1} mois)")
-    sm, lst, ndvi = entrees(src, debut, fin, G)
+    sm, lst, lsta, ndvi = entrees(src, debut, fin, G)
+    mois = list(range(debut, fin + 1))
+    lst, stats_lst = combler_lst(lst, lsta, mois, zone)
+    print(f"LST : pixels manquants (Terra → Terra + Aqua), % par mois de l'année : {stats_lst}")
     vuln = vulnerabilite(G)
-    ecrire(cle, src.label, list(range(debut, fin + 1)), sm, lst, ndvi, vuln, G, zone, anneaux)
+    ecrire(cle, src.label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst)
 
 
-def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux):
+def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=None):
     smadi = calcul_smadi(sm, lst, ndvi)
     z = anomalies(smadi, mois)
     smadi_z = np.where(zone, smadi, np.nan)
@@ -542,6 +577,8 @@ def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux):
             "annees_tendance": [complets[0], complets[-1]] if complets else None,
             "genere": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
             "cfg": CFG, "vuln": VULN,
+            "lst": "MODIS Terra MOD11A2, trous comblés par Aqua MYD11A2 (écart Aqua − Terra retiré)",
+            "lst_manquante_pct": stats_lst,
         },
         "grille": {**G, "zone": code_classes(zone.astype(np.uint8))},
         "contour": [[[round(x, 4), round(y, 4)] for x, y in a[:: max(1, len(a) // 400)]] for a in anneaux],
