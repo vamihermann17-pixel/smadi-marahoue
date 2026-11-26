@@ -31,6 +31,17 @@ jobs:
       - name: Installer les dépendances
         run: pip install -r requirements.txt
 
+      # Connexion sans clé à Google Cloud (Workload Identity Federation) :
+      # variables GCP_WIF_PROVIDER et GCP_SERVICE_ACCOUNT du dépôt
+      - name: Connexion à Google Cloud (sans clé)
+        id: gcp
+        if: vars.GCP_WIF_PROVIDER != '' && (github.event_name != 'push' || hashFiles('docs/smadi_marahoue.json') == '')
+        continue-on-error: true
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
       - name: Calculer le SMADI (Google Earth Engine)
         # Sur un simple push, on ne recalcule que si aucune donnée n'a encore été produite
         if: github.event_name != 'push' || hashFiles('docs/smadi_marahoue.json') == ''
@@ -43,8 +54,8 @@ jobs:
           SM_SOURCE: ${{ vars.SM_SOURCE || 'era5' }}
           OUTDIR: ../docs
         run: |
-          if [ -z "$EE_SERVICE_ACCOUNT_KEY" ]; then
-            echo "::error::Secret EE_SERVICE_ACCOUNT_KEY absent : voir le README (Connexion à Earth Engine)."
+          if [ -z "$EE_SERVICE_ACCOUNT_KEY" ] && [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "::error::Aucune connexion à Earth Engine : connexion sans clé (variables GCP_WIF_PROVIDER, GCP_SERVICE_ACCOUNT) ou secret EE_SERVICE_ACCOUNT_KEY, voir le README."
             exit 1
           fi
           for essai in 1 2 3; do
@@ -61,6 +72,10 @@ jobs:
           git add docs/*.json docs/*.csv scripts/cache_smadi
           git diff --cached --quiet || git commit -m "SMADI jusqu'à $(python -c "import json;print(json.load(open('docs/smadi_marahoue.json'))['dernier_mois']['m'])")"
           git push
+
+      - name: Signaler l'échec du calcul
+        if: steps.calcul.outcome == 'failure'
+        run: echo "::warning::Le calcul du SMADI a échoué ; la page garde les données précédentes. Voir le journal de l'étape « Calculer le SMADI »."
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

@@ -160,6 +160,13 @@ def init_ee():
         info = json.loads(key)
         creds = ee.ServiceAccountCredentials(info["client_email"], key_data=key)
         ee.Initialize(creds, project=project or info.get("project_id"))
+    elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        # Connexion sans clé (Workload Identity Federation, google-github-actions/auth)
+        import google.auth
+        creds, _ = google.auth.default(scopes=[
+            "https://www.googleapis.com/auth/earthengine",
+            "https://www.googleapis.com/auth/cloud-platform"])
+        ee.Initialize(creds, project=project)
     else:
         ee.Initialize(project=project)
     _ee = ee

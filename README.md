@@ -38,7 +38,20 @@ bornes par pixel sur toute la période, NDVI ≤ 0,1 masqué (Sánchez et al., 2
 
 ## Connexion à Earth Engine (une seule fois)
 Le calcul tourne sur les serveurs GitHub, qui doivent pouvoir se connecter à votre projet
-Earth Engine avec un **compte de service** :
+Earth Engine.
+
+### Méthode utilisée : sans clé (Workload Identity Federation)
+Aucun fichier de clé ni secret : Google Cloud fait confiance au seul dépôt
+`vamihermann17-pixel/smadi-marahoue`, avec des jetons valables environ une heure.
+
+1. Console Google Cloud, projet `smadi-2026` → **Cloud Shell**, puis :
+   `bash <(curl -sL https://raw.githubusercontent.com/vamihermann17-pixel/smadi-marahoue/main/scripts/config_gcp_sans_cle.sh)`
+   (compte de service `smadi-github`, rôles Earth Engine, pool `github` limité au dépôt).
+2. Dépôt GitHub → **Settings → Secrets and variables → Actions → Variables** : reporter
+   `GCP_WIF_PROVIDER` et `GCP_SERVICE_ACCOUNT` affichés à la fin du script, et `EE_PROJECT`.
+
+### Autre méthode : clé JSON
+Avec un **compte de service** et sa clé :
 
 1. Console Google Cloud, projet enregistré pour Earth Engine (ex. `smadi-2026`) :
    **IAM et administration → Comptes de service → Créer**. Rôles :
