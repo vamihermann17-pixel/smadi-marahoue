@@ -1,0 +1,36 @@
+name: Calage des seuils (Côte d'Ivoire)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  calage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - name: Calage national des seuils du mode anomalie
+        working-directory: scripts
+        env:
+          EE_PROJECT: ${{ vars.EE_PROJECT }}
+          SM_SOURCE: ${{ vars.SM_SOURCE || 'era5' }}
+        run: python calibrer_seuils_z.py
+      - name: Enregistrer le résultat
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/calibration_seuils_z.json
+          git diff --cached --quiet || git commit -m "Calage national des seuils du mode anomalie"
+          git push
