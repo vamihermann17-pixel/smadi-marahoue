@@ -104,7 +104,7 @@ a{color:var(--water)}
       <div class="ctl">
         <span class="eyebrow">Mois sec si</span>
         <div class="seg" id="methSeg">
-          <button type="button" data-k="z" aria-pressed="true">Anomalie z ≥ 1,5</button>
+          <button type="button" data-k="z" aria-pressed="true">Anomalie z ≥ <span class="thrZ">1</span></button>
           <button type="button" data-k="fixe" aria-pressed="false">SMADI ≥ 1</button>
         </div>
       </div>
@@ -205,13 +205,13 @@ a{color:var(--water)}
           <h3 class="vh">Repère-t-il les mois secs ?</h3>
           <p class="muted small">Avril–octobre. Mois sec observé : eau du sol beta ≤ −1 (≈ 13 % des mois).</p>
           <table><thead><tr><th>Mois sec si</th><th>Détectés</th><th>Fausses alertes</th></tr></thead><tbody>
-            <tr><td>z ≥ 1,0</td><td>42 %</td><td>58 %</td></tr>
-            <tr><td>z ≥ 1,5 (page)</td><td>25 %</td><td>50 %</td></tr>
+            <tr><td><b>z ≥ 1,0 (page)</b></td><td><b>42 %</b></td><td><b>58 %</b></td></tr>
+            <tr><td>z ≥ 1,5 (sévère)</td><td>25 %</td><td>50 %</td></tr>
             <tr><td>z ≥ 2,0</td><td>14 %</td><td>36 %</td></tr>
             <tr><td>SMADI ≥ 1</td><td>9 %</td><td>65 %</td></tr>
           </tbody></table>
-          <p><span class="pill warn">z ≥ 1,5 ne voit que les sécheresses sévères</span></p>
-          <p class="small">Le critère de la page manque trois mois secs sur quatre mais se trompe moins. z ≥ 1,0 donne le meilleur compromis pour une veille (score de Heidke 0,33 contre 0,27). Le seuil fixe SMADI ≥ 1 signale surtout la saison sèche normale.</p>
+          <p><span class="pill good">Critère de la page : z ≥ 1,0</span></p>
+          <p class="small">z ≥ 1,0 donne autant d'alertes que de mois secs observés et le meilleur score (Heidke 0,33). z ≥ 1,5 se trompe un peu moins mais manque trois mois secs sur quatre : il ne repère que les sécheresses sévères. Le seuil fixe SMADI ≥ 1 signale surtout la saison sèche normale.</p>
         </div>
       </div>
     </section>
@@ -220,7 +220,7 @@ a{color:var(--water)}
       <div class="panel-head"><div><span class="eyebrow">Notice</span><h2>Lire et utiliser la page</h2></div></div>
       <div class="notes">
         <div><h3>Mode d'emploi</h3><ol>
-          <li>« Anomalie z ≥ 1,5 » compare chaque mois à la normale du même mois : c'est le bon critère pour repérer une sécheresse anormale. « SMADI ≥ 1 » compte aussi chaque saison sèche normale comme une sécheresse.</li>
+          <li>« Anomalie z ≥ <span class="thrZ">1</span> » compare chaque mois à la normale du même mois : c'est le bon critère pour repérer une sécheresse anormale. « SMADI ≥ 1 » compte aussi chaque saison sèche normale comme une sécheresse.</li>
           <li>« SMADI du mois » et « Anomalie du mois » montrent l'un des 36 derniers mois (curseur). Les autres cartes résument toute la période.</li>
           <li>Survolez la carte pour lire la valeur d'un pixel. Les surfaces se mettent à jour avec la carte.</li>
           <li>Les valeurs mensuelles sont téléchargeables : <a href="serie_smadi_marahoue.csv" download>serie_smadi_marahoue.csv</a>.</li>
@@ -290,14 +290,16 @@ function smadiClass(v){const br=D.meta.cfg.smadiBreaks;let c=1;for(const b of br
 // Description de chaque couche
 function spec(){
   const z=st.meth==="z",cfg=D.meta.cfg,k=st.mi;
+  const fb=cfg.freqBreaksZ,fz={lo:Math.floor(fb[0]-(fb[1]-fb[0])),hi:Math.ceil(fb[3]+(fb[3]-fb[2]))};
+  const ib=cfg.intensityBreaksZ,iz={lo:Math.round((ib[0]-.15)*20)/20,hi:Math.round((ib[3]+.15)*20)/20};
   const L={
     mois:{title:"SMADI du mois",key:`m:${k}:smadi`,cls:v=>smadiClass(v),pal:PAL.smadi,names:SMN.map((n,i)=>{const b=cfg.smadiBreaks;return (i===0?"< "+fr(b[0]):i===4?"≥ "+fr(b[3]):fr(b[i-1])+"–"+fr(b[i]))+" · "+n;}),fmt:v=>fr(v,2)},
     moisz:{title:"Anomalie du mois (z)",key:`m:${k}:z`,lo:-2,hi:2,pal:PAL.trend,ticks:["≤ −2 plus humide","0 normal","≥ +2 plus sec"],fmt:v=>(v>0?"+":"")+fr(v,2)},
     risque:{title:"Risque de sécheresse agricole",key:`${st.meth}:risque`,cls:v=>v,pal:PAL.level,names:LEVEL,fmt:v=>LEVEL[v-1]},
     alea:{title:"Aléa (fréquence × intensité)",key:`${st.meth}:alea`,cls:v=>v,pal:PAL.level,names:LEVEL,fmt:v=>LEVEL[v-1]},
-    freq:{title:"Fréquence des mois secs",key:`${st.meth}:freq`,lo:z?6:0,hi:z?10:40,pal:PAL.freq,ticks:z?["≤ 6 %","8 %","≥ 10 %"]:["0 %","20 %","≥ 40 %"],fmt:v=>fr(v,1)+" % des mois"},
+    freq:{title:"Fréquence des mois secs",key:`${st.meth}:freq`,lo:z?fz.lo:0,hi:z?fz.hi:40,pal:PAL.freq,ticks:z?["≤ "+fr(fz.lo,0)+" %",fr((fz.lo+fz.hi)/2,0)+" %","≥ "+fr(fz.hi,0)+" %"]:["0 %","20 %","≥ 40 %"],fmt:v=>fr(v,1)+" % des mois"},
     duree:{title:"Durée moyenne des épisodes",key:`${st.meth}:duree`,lo:1,hi:5,pal:PAL.dur,ticks:["1 mois","3","≥ 5 mois"],fmt:v=>fr(v,1)+" mois"},
-    intensite:{title:"Intensité des mois secs",key:`${st.meth}:intensite`,lo:z?1.5:1,hi:z?2.5:3.5,pal:PAL.freq,ticks:z?["z 1,5","2,0","≥ 2,5"]:["SMADI 1","2,25","≥ 3,5"],fmt:v=>(z?"z moyen ":"SMADI moyen ")+fr(v,2)},
+    intensite:{title:"Intensité des mois secs",key:`${st.meth}:intensite`,lo:z?iz.lo:1,hi:z?iz.hi:3.5,pal:PAL.freq,ticks:z?["≤ z "+fr(iz.lo,2),fr((iz.lo+iz.hi)/2,2),"≥ "+fr(iz.hi,2)]:["SMADI 1","2,25","≥ 3,5"],fmt:v=>(z?"z moyen ":"SMADI moyen ")+fr(v,2)},
     tendance:{title:"Tendance du SMADI (par décennie)",key:"tendance",lo:-0.4,hi:0.4,pal:PAL.trend,ticks:["≤ −0,4 moins sec","0","≥ +0,4 plus sec"],fmt:v=>(v>0?"+":"")+fr(v,2)+" par décennie"},
     vulnerabilite:{title:"Vulnérabilité agricole (MCD12Q1)",key:"vulnerabilite",cls:v=>v+1,pal:PAL.vuln,names:["0 · non concerné","1 · forêts, zones humides","2 · fourrés","3 · savanes, prairies","4 · mosaïque cultures","5 · cultures"],fmt:v=>"classe "+v},
   };
@@ -367,7 +369,7 @@ function areas(S,vals){
 }
 
 // ---------------- Tuiles ----------------
-function pill(z){return z>=1.5?'<span class="pill bad">Sécheresse anormale</span>':z>=0.5?'<span class="pill warn">Plus sec que la normale</span>':z<=-0.5?'<span class="pill good">Plus humide que la normale</span>':'<span class="pill good">Proche de la normale</span>';}
+function pill(z){return z>=1.5?'<span class="pill bad">Sécheresse sévère</span>':z>=1?'<span class="pill bad">Sécheresse anormale</span>':z>=0.5?'<span class="pill warn">Plus sec que la normale</span>':z<=-0.5?'<span class="pill good">Plus humide que la normale</span>':'<span class="pill good">Proche de la normale</span>';}
 function verdict(){
   const d=D.dernier_mois,z=st.meth==="z",cfg=D.meta.cfg;
   const pct=z?d.pct_z:d.pct_fixe;
@@ -414,7 +416,7 @@ function serie(){
   hit.addEventListener("mouseleave",hideTip);
   hit.addEventListener("click",e=>{const s=ser[idx(e)];const k=D.cartes_mois.findIndex(c=>c.m===s.m);if(k<0)return;
     st.mi=k;$("#moisRange").value=k;if(!st.layer.startsWith("mois")){st.layer="mois";$("#layerSel").value="mois";save();}render();});
-  $("#serieLegend").innerHTML=`<span><i style="background:${css("--paddy")}"></i>SMADI moyen (axe de gauche)</span><span><i style="background:${col};opacity:.6"></i>% de la région en sécheresse, ${z?"z ≥ 1,5":"SMADI ≥ 1"} (axe de droite)</span><span>tirets : SMADI = ${fr(thr,0)}</span>`;
+  $("#serieLegend").innerHTML=`<span><i style="background:${css("--paddy")}"></i>SMADI moyen (axe de gauche)</span><span><i style="background:${col};opacity:.6"></i>% de la région en sécheresse, ${z?"z ≥ "+fr(D.meta.cfg.droughtThresholdZ):"SMADI ≥ 1"} (axe de droite)</span><span>tirets : SMADI = ${fr(thr,0)}</span>`;
 }
 
 // ---------------- Saisons et années ----------------
@@ -462,6 +464,7 @@ fetch("smadi_marahoue.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Erro
   $("#srcInfo").textContent=`${mShort(d.meta.periode[0])} → ${mShort(d.meta.periode[1])} · ${d.meta.source_sm}`;
   $("#mSrc").textContent=d.meta.source_sm;
   $("#foot").innerHTML=`Calcul du ${d.meta.genere} · ${d.meta.n_mois} mois · grille ${G.w} × ${G.h} pixels de ${fr(G.res,2)}°. Sources : NASA MODIS (LP DAAC), ${d.meta.source_sm}, limites geoBoundaries. Calcul Google Earth Engine.`;
+  document.querySelectorAll(".thrZ").forEach(e=>e.textContent=fr(d.meta.cfg.droughtThresholdZ));
   $("#etat").hidden=true;$("#app").hidden=false;render();
 }).catch(e=>{$("#etat").innerHTML=`<span class="err">Les données ne sont pas encore disponibles (${e.message}).</span><br>Elles sont produites par la première exécution du workflow « Mise à jour du SMADI ».`;});
 })();

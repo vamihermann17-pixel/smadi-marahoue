@@ -17,7 +17,7 @@ Déroulement
   2. Calcul local (numpy) du SMADI, des anomalies mensuelles z et des produits :
      fréquence, durée, intensité, aléa, risque (× vulnérabilité MODIS MCD12Q1),
      tendance (pente de Sen par décennie), pour les deux modes de l'application
-     (seuil fixe SMADI ≥ 1 et anomalie z ≥ 1,5).
+     (seuil fixe SMADI ≥ 1 et anomalie z ≥ 1,0 ; l'application utilise z ≥ 1,5).
   3. Écriture de docs/smadi_marahoue.json (page web) et docs/serie_smadi_marahoue.csv.
 
 Connexion à Earth Engine
@@ -63,9 +63,12 @@ CFG = {
     "smadiBreaks": [0.5, 1.0, 2.0, 3.0],
     "freqBreaks": [5, 10, 20, 30],
     "intensityBreaks": [1.5, 2.0, 2.5, 3.0],
-    "droughtThresholdZ": 1.5,
-    "freqBreaksZ": [7.5, 8.1, 8.6, 9.2],
-    "intensityBreaksZ": [2.03, 2.09, 2.14, 2.21],
+    # Mode anomalie : z ≥ 1,0 (meilleur score de détection, VALIDATION.md ; l'application GEE
+    # utilise 1,5). Bornes = quantiles nationaux 20/40/60/80 % (calibrer_seuils_z.py,
+    # validation/calibration_seuils_z.json, Côte d'Ivoire à 0,05°, mars 2000 → oct. 2026).
+    "droughtThresholdZ": 1.0,
+    "freqBreaksZ": [14.7, 15.5, 16.2, 16.9],
+    "intensityBreaksZ": [1.61, 1.67, 1.72, 1.77],
     "aleaBreaks": [3, 5, 9, 15],
     "riskBreaks": [4, 7, 12, 18],
     "ndviMin": 0.1,
@@ -549,7 +552,8 @@ def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=No
     os.makedirs(OUTDIR, exist_ok=True)
     with open(os.path.join(OUTDIR, "serie_smadi_marahoue.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f, delimiter=";")
-        w.writerow(["mois", "smadi_moyen", "anomalie_z_moyenne", "pct_zone_smadi_ge_1", "pct_zone_z_ge_1_5"])
+        w.writerow(["mois", "smadi_moyen", "anomalie_z_moyenne", "pct_zone_smadi_ge_1",
+                    f"pct_zone_z_ge_{CFG['droughtThresholdZ']}".replace(".", "_")])
         for s in serie:
             w.writerow([s["m"], s["smadi"], s["z"], s["pct_fixe"], s["pct_z"]])
 
@@ -602,7 +606,7 @@ def ecrire(cle, label, mois, sm, lst, ndvi, vuln, G, zone, anneaux, stats_lst=No
     print(f"Écrit : {chemin} ({os.path.getsize(chemin) / 1e6:.2f} Mo)")
     d = out["dernier_mois"]
     print(f"Dernier mois {d['m']} : SMADI moyen {d['smadi']}, z {d['z']}, "
-          f"{d['pct_fixe']} % de la zone avec SMADI ≥ 1, {d['pct_z']} % avec z ≥ 1,5")
+          f"{d['pct_fixe']} % de la zone avec SMADI ≥ 1, {d['pct_z']} % avec z ≥ {CFG['droughtThresholdZ']}")
 
 
 if __name__ == "__main__":

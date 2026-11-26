@@ -15,7 +15,9 @@ sur GitHub Pages, des données en cache dans le dépôt.
   surfaces par classe en km².
 - L'**évolution mensuelle** depuis 2000 (SMADI moyen + % de la région en sécheresse),
   la climatologie mois par mois et les années les plus sèches.
-- Les deux critères de l'application : « SMADI ≥ 1 » (seuil fixe) et « anomalie z ≥ 1,5 ».
+- Deux critères : « SMADI ≥ 1 » (seuil fixe) et « anomalie z ≥ 1,0 » (l'application GEE utilise
+  z ≥ 1,5 ; 1,0 détecte mieux les mois secs, voir VALIDATION.md). Classes de fréquence et
+  d'intensité recalées sur toute la Côte d'Ivoire (`scripts/calibrer_seuils_z.py`).
 
 ## Méthode (identique à l'application GEE)
 SMADI(m) = SMCI(m) × LST(m−1)/LSTmax ÷ NDVI(m−1), SMCI = (SMmax − SM)/(SMmax − SMmin),
@@ -97,7 +99,7 @@ Puis ouvrir `docs/index.html` via un petit serveur (`python -m http.server -d do
 ## Validation
 Voir [VALIDATION.md](VALIDATION.md) (`scripts/validation_smadi.py`) : le SMADI suit l'eau du sol
 TAMSAT-ALERT (r ≈ −0,6 à −0,7) et la pluie, surtout de septembre à mars, mal d'avril à juin ;
-seuil conseillé pour une veille z ≥ 1,0 (z ≥ 1,5 = sécheresses sévères).
+seuil retenu pour la page z ≥ 1,0 (z ≥ 1,5 = sécheresses sévères).
 
 ## Limites
 Seuils de classes indicatifs (ceux du mode anomalie ont été calés sur toute la Côte

@@ -40,7 +40,7 @@ Saison culturale, maille × mois. Mois sec observé = SPI-3 ≤ −1 ou beta ≤
 |---|---|---|---|---|---|
 | z ≥ 0,5 | 61 % | 69 % | 0,29 | 0,17 | 2,0 |
 | **z ≥ 1,0** | **42 %** | **58 %** | **0,33** | **0,12** | **1,0** |
-| z ≥ 1,5 (actuel) | 25 % | 50 % | 0,27 | 0,05 | 0,5 |
+| z ≥ 1,5 (application GEE) | 25 % | 50 % | 0,27 | 0,05 | 0,5 |
 | z ≥ 2,0 | 14 % | 36 % | 0,19 | 0,01 | 0,2 |
 | SMADI ≥ 1 (seuil fixe) | 9 % | 65 % | 0,09 | 0,04 | 0,3 |
 
@@ -75,3 +75,11 @@ l'échelle de la saison, le bilan hydrique décrit mieux la végétation que le 
 - Limites : références elles-mêmes issues de satellites et de modèles (pas de mesures au sol),
   mailles de 28 km, 20 saisons. Une vérification avec les observations des agents agricoles
   (rendements, dates de flétrissement) reste à faire.
+
+## Suite donnée (novembre 2026)
+La page utilise désormais **z ≥ 1,0**. Les bornes des classes de fréquence et d'intensité ont été
+recalées comme dans l'application (quantiles nationaux 20/40/60/80 %), avec la même chaîne de
+calcul sur toute la Côte d'Ivoire à 0,05° (`scripts/calibrer_seuils_z.py`) :
+fréquence 14,7 / 15,5 / 16,2 / 16,9 % ; intensité z 1,61 / 1,67 / 1,72 / 1,77.
+Contrôle : pour z ≥ 1,5, ce calage redonne presque les bornes de l'application, établies avec
+TAMSAT-SM (7,2–8,9 % contre 7,5–9,2 % ; 2,03–2,25 contre 2,03–2,21).
