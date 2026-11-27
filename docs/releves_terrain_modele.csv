@@ -1,1 +1,1 @@
-﻿village;code_village;lat;lon;mois;comparaison_normale;pluie_percue;pluie_mm;jours_secs_max;parcelles_vues;parcelles_fletries;etat_cultures;cause;savane;points_eau;ressemis;recolte_vs_normale;perte_pct;code_observateur;remarques
+﻿village;code_village;lat;lon;mois;comparaison_normale;pluie_percue;pluie_mm;jours_secs_max;part_cultivee_pct;part_plantations_pct;parcelles_vues;parcelles_fletries;etat_cultures;cause;savane;points_eau;ressemis;recolte_vs_normale;perte_pct;code_observateur;remarques

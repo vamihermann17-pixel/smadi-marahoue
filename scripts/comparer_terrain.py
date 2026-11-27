@@ -127,6 +127,13 @@ def main():
         "savane (1 verte → 4 brûlée)": (+1, [num(r.get("savane")) for r in rows]),
         "points d'eau (1 normal → 3 à sec)": (+1, [num(r.get("points_eau")) for r in rows]),
     }
+    # Part cultivée estimée au village (pour tester une future couche de vulnérabilité)
+    pc = {}
+    for r in rows:
+        v = num(r.get("part_cultivee_pct"))
+        if np.isfinite(v):
+            pc.setdefault(r.get("code_village") or r.get("village"), []).append(v)
+    res["part_cultivee_estimee_pct"] = {k: round(float(np.mean(v)), 1) for k, v in pc.items()}
     res["correlations"] = {}
     for nom, (signe, v) in obs.items():
         r, n = spearman(zz, v)
